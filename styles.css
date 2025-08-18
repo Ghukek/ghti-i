@@ -1,0 +1,284 @@
+.verse-label {
+  padding: 0;
+  font-weight: bold;
+  margin-right: 0.25em;
+}
+.word {
+  display: inline-flex;
+  flex-direction: column;
+  margin: 0 .3em 0.3em 0;
+  text-align: center;
+}
+
+.word > span {
+  display: inline;
+  width: 100%;
+}
+
+body { 
+  font-family: "Times New Roman"; 
+  padding: .5rem; 
+}
+
+.grk { 
+  color: darkred; 
+  cursor: pointer;
+}
+
+.eng { 
+  color: darkgreen; 
+  cursor: pointer;
+}
+
+.pcode {
+  font-size: 0.6em;
+  color: #4B2E1D;
+  cursor: pointer;
+}
+
+.roots {
+  font-size: 0.9em;
+  color: darkred;
+  cursor: pointer;
+}
+
+.roots:hover, .pcode:hover, .eng:hover, .grk:hover, .col:hover, #toggleGreekHelp:hover {
+  background-color: #f0e9d8; /* light tan, less red */
+}
+
+.grk, .eng, .pcode, .roots {
+  display: inline; /* stack vertically inside the word */
+  text-align: center;
+}
+
+#output {
+  padding-bottom: 50px; /* add enough space to avoid being hidden behind #navHeader */
+  padding-top: 0.5em;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  white-space: normal;
+}
+
+.verse {
+  display: flex;
+  align-items: center; /* vertically centers child elements */
+  flex-wrap: wrap;
+}
+
+.verse-label {
+  font-weight: bold;
+  margin-right: 0.5em;
+  align-self: center;
+}
+
+select {
+  max-height: 200px; /* Optional for visual control */
+  overflow-y: auto;
+}
+
+.popup {
+  position: absolute;
+  background: white;
+  border: 1px solid #666;
+  padding: 8px;
+  border-radius: 6px;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.25);
+  max-width: 280px;
+  z-index: 10000;
+  pointer-events: auto;
+  display: none;
+  user-select: none; /* prevent accidental text selection on hover */
+  font-family: "Times New Roman"; 
+}
+
+.popup {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  padding: 12px;
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+
+#navHeader {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: white;
+  padding: 2px 4px;
+  border-top: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  z-index: 999;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+}
+
+#navHeader button {
+  padding: 2px 4px;
+}
+
+.word-list-grid {
+  display: table;
+  table-layout: auto;
+  width: auto;
+  border-collapse: collapse; /* Optional: removes spacing between cells */
+}
+
+.word-row {
+  display: table-row;
+  white-space: normal;
+}
+
+.word-row span {
+  display: table-cell;
+  padding: 0.1em 0.3em; /* Optional spacing */
+}
+
+.word-header span {
+  font-weight: bold;
+}
+
+.head-group {
+  display: inline-flex;
+}
+
+.word-list-grid .english {
+  color: darkgreen;
+}
+
+.word-list-grid .greek {
+  color: darkred;
+}
+
+.col.reference {
+  cursor: default;
+}
+
+.col.reference:hover {
+  background-color: inherit; /* or transparent */
+  color: inherit;
+  cursor: default;
+}
+
+.col {
+  cursor: pointer;
+}
+
+.col.colroots {
+  /* styles here */
+  white-space: nowrap !important;
+  overflow-wrap: normal !important;
+  word-wrap: normal !important;
+  hyphens: none !important;
+}
+
+input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.popup-clickable {
+  cursor: pointer;
+}
+
+.popup-clickable:hover {
+  background-color: #f0e9d8; /* light tan, less red */
+}
+
+#interlinePopup label {
+  cursor: pointer;
+}
+
+#interlinePopup input[type="checkbox"] {
+  cursor: pointer;
+}
+
+span[data-search] {
+  cursor: pointer;
+}
+
+label:has(input[type="checkbox"]) {
+  cursor: pointer;
+}
+
+button {
+  cursor: pointer;
+}
+
+select {
+  cursor: pointer;
+}
+
+#mainContent, header, h1 {
+  margin-top: 0;
+  padding-top: 0;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+#toggleGreekHelp {
+  cursor: pointer;
+}
+
+.popup-image {
+  position: absolute;
+  background: white;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.popup-image img {
+  max-width: 300px;
+  height: auto;
+}
+
+#greekHelpPopup {
+  position: fixed;
+  top: 10px;  /* adjust to move it down */
+  left: 10px;  /* adjust to move it to the right */
+  background: white;
+  border: 1px solid #ccc;
+  padding: 4px;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+#greekHelpPopup img {
+  max-width: 300px; /* or whatever fits nicely */
+  display: block;
+}
+
+.search-separator {
+  border: none;
+  border-top: 1px solid black;
+  width: 100%;
+}
+
+.popup.help-popup {
+  position: absolute;
+  max-width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid black;
+  padding: 15px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+
+.popup.help-popup .help-content {
+  margin-bottom: 10px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.popup.help-popup .close-btn {
+  display: block;
+  margin: 0 auto;
+  padding: 5px 10px;
+  cursor: pointer;
+}

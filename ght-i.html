@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta property="og:image" content="https://ghukek.com/preview.png">
+  <meta property="og:image:width" content="842">
+  <meta property="og:image:height" content="288">
+  <meta property="og:title" content="GHT Study Tool">
+  <meta property="og:description" content="Greek Interlinear and Search">
+  <meta property="og:url" content="https://ghukek.com/ght-i.html">
+  <meta property="og:type" content="website">
+  <title>GHT Study Tool</title>
+  <script>
+    const script = document.createElement("script");
+    script.src = "script.js?t=" + Date.now(); // prevent cache
+    script.defer = true;
+    document.head.appendChild(script);
+    const style = document.createElement("link");
+    style.rel = "stylesheet";
+    style.href = "styles.css?t=" + Date.now(); // bust cache
+    document.head.appendChild(style);
+  </script>
+</head>
+  <h1>GHT Study Tool</h1>
+  <button title="Show help about using the page" id="helpButton" onclick="toggleHelpPopup()">Help</button>
+  <a href="https://www.wiebefamily.org/GHT.htm" target="_blank" rel="noopener noreferrer">GHT Source</a>
+  <br>Data last updated: <b style="color: #bb0000"></i><i id="data_last_updated"></i></b><i> (your local time)</i>
+  <br>Tool last updated: <b style="color: #bb0000"></i><i id="tool_last_updated"></i></b><i> (your local time)</i>
+  <br><br>
+  <span class="head-group">
+    <label>Start Ref: <select id="bookStart" data-id></select></label>
+    <select id="chapterStart" data-id></select>
+    <select id="verseStart" data-id></select>
+  </span>
+  <span class="head-group">
+    <label>End Ref: <select id="bookEnd" data-id></select></label>
+    <select id="chapterEnd" data-id></select>
+    <select id="verseEnd" data-id></select>
+  </span>
+  <span class="head-group">
+    <label title="Select how many verses to show during context searches or when fixing impossible reference range selections." for="gapInput">Verse Range:</label>
+    <input id="gapInput" type="number" value="1" min="1" step="1" style="width: 45px;" data-id>
+    <label title="Force the browser to maintain the selected Verse Range when navigating."><input type="checkbox" id="enforceGap" checked data-id> Fixed</label>
+    <button onclick="render()">Load</button>
+  </span>
+  <br>
+  <span class="head-group">
+    <button title="Select which properties to show on screen; any left unchecked will show in the word popup." data-toggle-popup onclick="togglePopup('interlinePopup')">Interlinear Options</button>
+    <div id="interlinePopup" class="popup menu-popup">
+      <label><input type="checkbox" id="showGreek" checked data-id> Greek</label><br>
+      <label><input type="checkbox" id="showEnglish" checked data-id> English</label><br>
+      <label><input type="checkbox" id="showPcode" data-id> Morphology</label><br>
+      <label><input type="checkbox" id="showStrongs" data-id> Strong's</label><br>
+      <label><input type="checkbox" id="showRoots" data-id> Roots</label><br>
+    </div>
+    <button data-toggle-popup onclick="togglePopup('displayPopup')">Display Options</button>
+    <div id="displayPopup" class="popup menu-popup">
+      <label><input type="checkbox" id="showVerses" checked data-id> Show verse numbers</label><br>
+      <label><input type="checkbox" id="newlineAfterVerse" data-id> New line after each verse</label><br>
+      <label title="When checked, show the GHT English word order, otherwise use the word order as used in the original Greek text."><input type="checkbox" id="reverseInterlinear" checked data-id> Reverse Interlinear</label><br>
+      <button onclick="saveSettings()">Save All Settings</button>
+      <button onclick="resetSettings()">Reset All Settings</button>
+    </div>
+    <button data-toggle-popup onclick="togglePopup('searchPopup')">Search Options</button>
+    <div id="searchPopup" class="popup menu-popup">
+      <label title="Any Search: Searches by an exact match rather than a partial match."><input type="checkbox" id="exactMatch" data-id> Exact match</label><br>
+      <label title="Context or Phrase Search: Center the verse that contains the search results within the verse range."><input id="centerRange" type="checkbox" data-id> Center ref</label><br>
+      <label title="Single-word Search: Show results in context according to the verse range."><input type="checkbox" id="showContext" data-id> Show context</label><br>
+      <label title="Single-word Search: Only show unique word pairs."><input id="uniqueWords" type="checkbox" data-id> Unique words</label><br>
+      <label title="Phrase Search: Only show words when they are in the requested order."><input id="ordered" type="checkbox" data-id> Ordered</label><br>
+      <label title="Phrase Search: Only show words when they are adjacent."><input id="adjacent" type="checkbox" data-id> Adjacent</label>
+    </div>
+  </span>
+  <span class="head-group">
+    Save as URL:&nbsp;<button title="Share current passage selection." onclick="encodeRangeToUrl()">Verse Selection</button>
+    <button title="Share current search term and settings." onclick="saveUrlSearch()">Search Term/Settings</button>
+    <button title="Go back to default URL" onclick="resetUrl()">Reset</button>
+  </span>
+  <span class="head-group">
+    Copy text:&nbsp;<button onclick="copyText('grk')">Greek</button>
+    <button onclick="copyText('eng')">English</button>
+  </span>
+  <br>
+  <span class="head-group">
+    <input type="text" id="searchInput" placeholder="Enter search term" data-id/>
+    <button id="searchBtn" data-id>Search</button>
+  </span>
+  <span class="head-group">
+    <label title="Convert keyboard input to Greek letters"><input type="checkbox" id="convertToGreek" data-id> Greek Keyboard</label>
+    <button id="toggleGreekHelp" type="button" title="Show Greek keyboard layout">?</button>
+    <div id="greekHelpPopup" class="popup-image" hidden>
+      <img src="grkkeyboard.png" alt="Greek Keyboard Layout">
+    </div>
+  </span>
+  <div id="output"></div>
+  <div id="wordPopup" class="popup"
+      onmouseover="cancelHidePopup()"
+      onmouseout="hidePopup()">
+  </div>
+  <body>
+    <div id="navHeader">
+    <button onclick="updateBCV(-3)">◀Book</button>
+    <button onclick="updateBCV(-2)">◀Chapter</button>
+    <button onclick="updateBCV(-1)">◀Verse</button>
+
+    <button onclick="updateBCV(1)">Verse▶</button>
+    <button onclick="updateBCV(2)">Chapter▶</button>
+    <button onclick="updateBCV(3)">Book▶</button>
+  </div>
+  <!-- History Buttons -->
+  <div id="historyButtons" style="
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 5px;
+      z-index: 1000;
+  ">
+    <button id="historyBackBtn" title="Undo last change">← Back</button>
+    <button id="historyForwardBtn" title="Redo last change">Forward →</button>
+  </div>
+</body>
+<div id="helpPopup" class="popup help-popup" style="display:none;">
+  <div class="help-content">
+    <h2>How to Use This Tool</h2>
+    <h3>Selecting passages by reference:</h3>
+    <p>Select your start and end book, chapter, and verse from "Start Ref" and "End Ref". </p>
+    <p>You may manually adjust how many verses to show at a time to by changing 'Verse Range'. A 'Verse Range' of '1' will show one verse. </p>
+    <p>You may select as many verses as you want by unchecking 'Fixed', but be warned that it may take a while to load very large selections. If you have 'Fixed' unchecked, then when going forwards from your current selection, I recommend changing the 'Start Ref' first. If you go past the current 'End Ref', the tool will automatically snap the 'End Ref' to be a few verses past your new 'Start Ref' by default. Likewise if you are going backwards, change the 'End Ref' first.</p>
+    <p>The 'Load' button will load the current reference selection. This is only necessary when the user has searched and wants to go back to the current selection.</p>
+    <p>The 'Interlinear Options' are a list of parameters that can be shown on screen. Any parameters left unchecked will be shown in a popup window for each word. The options are:</p>
+    <ul>
+      <li>Greek: shows the Greek text.</li>
+      <li>English: shows the English translation.</li>
+      <li>Morphology: shows grammatical information in abbreviated form. Expanded grammar information is shown in the popup.</li>
+      <li>Strong's: shows Strong’s Concordance numbers.</li>
+      <li>Roots: shows my personal categorization of related words by showing the primitive roots from which they are constructed. Greek has many compound words. This is meant to be a more comprehesive set of connections than the Strong's concordance numbers.</li>
+    </ul>
+    <p>The 'Display Options' allow you to adjust how to show the selected passages. You can also save or reset your settings here.</p>
+    <h3>Searching:</h3>
+    <p>To search, type text into the search bar and click 'Search'. You may also click on any clickable string in the body of the text or in the popups to automatically search that string. Use the 'Greek Keyboard' if you do not have a Greek keyboard set up in your operating system and want to type in Greek. When 'Greek Keyboard' is checked, the search bar will automatically convert your input to Greek characters to allow you to search for Greek words. Click the '?' button to see an image of a Greek keyboard if you don't know how to type in Greek. You may search for multiple words at a time.</p>
+    <p>The 'Search Options' allow you to customize your search parameters. The explanation for these are as follows:</p>
+    <ul>
+      <li>Exact Match: When checked, the search will only show words that are exactly as what you typed in (case insensitive). Otherwise, it will return all partial matches. When searching in English, "exact match" will take out any punctuation and add implied "of{" or "to{" brackets, such that if you were to search for "of{jesus}", you would find all cases of ιησου translated to the genitive case.</li>
+      <li>Center Ref: When checked, this will center the verse containing the search terms in its context. Otherwise, the verse containing the search terms will be shown as the start of its context. For example, with a context of 5 verses, "the jesus tears." will show John 11:35-39 when unchecked or John 11:33-37 when checked.</li>
+      <li>Show Context: When checked, this will return search results in the verse they appear in plus as much surrounding context as the user selects using 'Verse Range'. Otherwise it will just return a list of search results and the verse reference they appear in.</li>
+      <li>Unique Words: When checked, this will only show uniqe word pairs rather than every result. This is useful if a user is trying to look at all the different ways a specific word may be translated or inflected.</li>
+      <li>Ordered: When searching for multiple words, this forces the words to appear in the order they were searched. So, "Jesus Anointed" will not return verses that have "Anointed Jesus" (e.g. Acts 5:42). Note that this setting will work for whichever word order you have currently checked. Thus, "ου μη" (Exact Match, Ordered, Adjacent) will return a lot of results in interlinear order, but zero in reverse interlinear.</li>
+      <li>Adjacent: When searching for multiple words, this forces the words to be adjacent to each other. So, "Jesus Anointed" will not return "Jesus, the being-said 'Anointed'" (e.g. Matthew 1:18). </li>
+    </ul>
+    <p>For multiple word searches, with everything unchecked, the search will check the entire selected context for the words, no matter how far apart, out of order, or partial matching they may be. To restrict your search, you would want to reduce the 'Verse Range', check 'Exact Match', 'Ordered', or 'Adjacent' and any combination of these.</p>
+    <h3>Sharing:</h3>
+    <p>The tool can save the current reference selection to the URL so that the user can share a passage via link. Or, the user can share a particular search result. See the 'Save as URL:' buttons.</p>
+    <h3>Back and Forward:</h3>
+    <p>These buttons bring you to your last render state. It stores up to 100 renders in history.</p>
+    <h3>Copy text:</h3>
+    <p>For now, these only work for text showing on screen. They will copy all Greek or English text to your clipboard when you are verse-display mode.</p>
+  </div>
+  <button class="close-btn" onclick="toggleHelpPopup()">Close</button>
+</div>
+</html>
+
