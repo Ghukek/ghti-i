@@ -2018,6 +2018,7 @@ function handleWordMatches(term, { exact, showContext, matches }) {
 function multiWordSearch(searchStr, options) {
   //elements.gapInput.value = 1; // force gap to 1 for multi-word search
   const exact = elements.exactMatch.checked;
+  const normalized = elements.normalized.checked;
   const reverseInterlinear = elements.reverseInterlinear.checked;
   const ordered = elements.ordered.checked;       // new checkbox for ordered matching
   const adjacent = elements.adjacent.checked;     // new checkbox for adjacent matching
@@ -2075,7 +2076,7 @@ function multiWordSearch(searchStr, options) {
     const containsRare = verseWords.some(([ident, eng]) => {
       let checkVal;
 
-      if (exact && !isGreek) {
+      if (exact && !isGreek && normalized) {
         // Pull rEng from lookupdb using ident
         const lookupEntry = lookupdb[ident]?.[0] || "";
         if (lookupEntry && lookupEntry.length > 3) {
@@ -2085,7 +2086,12 @@ function multiWordSearch(searchStr, options) {
         }
       } else {
         // Pull Greek from lookupdb if needed
-        const grk = lookupdb[ident]?.[0] || "";
+        let grk = "";
+        if (typeof ident === "string" && /^[a-zA-Z]+$/.test(ident)) {
+          grk = ident;
+        } else {
+          grk = lookupdb[ident]?.[0] || "";
+        }
         checkVal = isGreek ? toLatin(grk) : (eng || "").toLowerCase();
       }
 
@@ -2178,8 +2184,13 @@ function checkWordSequence(allWords, latinWords, isGreek, { exact, ordered, adja
       }
     } else {
       // Pull Greek from lookupdb using ident
-      const grk = lookupdb[ident]?.[0] || "";
-      return isGreek ? toLatin(grk) : (eng || "").toLowerCase();
+      let grk = "";
+      if (typeof ident === "string" && /^[a-zA-Z]+$/.test(ident)) {
+        grk = ident;
+      } else {
+        grk = lookupdb[ident]?.[0] || "";
+      }
+      return isGreek ? grk : (eng || "").toLowerCase();
     }
   });
 
