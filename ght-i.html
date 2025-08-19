@@ -68,6 +68,7 @@
       <label title="Context or Phrase Search: Center the verse that contains the search results within the verse range."><input id="centerRange" type="checkbox" data-id> Center ref</label><br>
       <label title="Single-word Search: Show results in context according to the verse range."><input type="checkbox" id="showContext" data-id> Show context</label><br>
       <label title="Single-word Search: Only show unique word pairs."><input id="uniqueWords" type="checkbox" data-id> Unique words</label><br>
+      <label title="Single-word Search: Only search using normalized English for broader results."><input id="normalized" type="checkbox" data-id> Adjacent</label><br>
       <label title="Phrase Search: Only show words when they are in the requested order."><input id="ordered" type="checkbox" data-id> Ordered</label><br>
       <label title="Phrase Search: Only show words when they are adjacent."><input id="adjacent" type="checkbox" data-id> Adjacent</label>
     </div>
@@ -100,13 +101,13 @@
   </div>
   <body>
     <div id="navHeader">
-    <button onclick="updateBCV(-3)">◀Book</button>
-    <button onclick="updateBCV(-2)">◀Chapter</button>
-    <button onclick="updateBCV(-1)">◀Verse</button>
-
-    <button onclick="updateBCV(1)">Verse▶</button>
-    <button onclick="updateBCV(2)">Chapter▶</button>
-    <button onclick="updateBCV(3)">Book▶</button>
+    <button onclick="updateBCV(-3)">◀◀◀</button>
+    <button onclick="updateBCV(-2)">◀◀</button>
+    <button onclick="updateBCV(-1)">◀</button>
+    Navigate
+    <button onclick="updateBCV(1)">▶</button>
+    <button onclick="updateBCV(2)">▶▶</button>
+    <button onclick="updateBCV(3)">▶▶▶</button>
   </div>
   <!-- History Buttons -->
   <div id="historyButtons" style="
