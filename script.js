@@ -878,8 +878,16 @@ function render(customVerses = null) {
         const row = document.createElement("div");
         row.className = "word-row";
 
-        const lookupData = lookupdb[ident] || [];
-        const [grk, pcode, strongs, roots, count] = lookupData;
+        let grk = "", pcode = "", strongs = "", roots = "", count = 0;
+
+        if (typeof ident === "string" && /^[A-Za-z]+$/.test(ident)) {
+          // ident is a Latin string
+          grk = ident;
+        } else {
+          // ident is numeric, get data from lookupdb
+          const lookupData = lookupdb[ident] || [];
+          [grk, pcode, strongs, roots, count] = lookupData;
+        }
 
         if (ref !== "") {
           // Reference column (no popup)
@@ -1833,31 +1841,31 @@ function forEachVerse(callback) {
 }
 
 function searchVerses() {
-  const term = elements.searchInput.value.trim();
+  const searchTerm = elements.searchInput.value.trim();
   const exact = elements.exactMatch.checked;
   const showContext = elements.showContext.checked;
   const uniqueWords = elements.uniqueWords.checked;
   const container = document.getElementById('output');
   container.innerHTML = ''; // clear existing output
 
-  if (!term) {
+  if (!searchTerm) {
     container.innerHTML = '<p>Please enter a search term.</p>';
     return;
   }
 
   // Reference search
-  const ref = tryParseReference(term);
+  const ref = tryParseReference(searchTerm);
   if (ref) {
     setReferenceRange(ref);
     render();
     return;
   }
 
-  if (term.includes(" ")) {
-    const matches = multiWordSearch(term);
+  if (searchTerm.includes(" ")) {
+    const matches = multiWordSearch(searchTerm);
     
     if (matches.length === 0) {
-      container.innerHTML = `<p>No verses found containing "${term}".</p>`;
+      container.innerHTML = `<p>No verses found containing "${searchTerm}".</p>`;
       return;
     }
     
@@ -1866,21 +1874,21 @@ function searchVerses() {
   }
 
   const matches = [];
-  let [inLookups, lookupInd] = lookInLookups(term);
+  let [inLookups, lookupInd] = lookInLookups(searchTerm);
 
   // Allow "exact match Latin letters" shortcut
-  if (exact && /^[A-Za-z]+$/.test(term)) {
+  if (exact && /^[A-Za-z]+$/.test(searchTerm)) {
     inLookups = true;
   }
 
   if (inLookups || uniqueWords) {
-    handleLookupMatches(term, { exact, showContext, uniqueWords, matches });
+    handleLookupMatches(searchTerm, { exact, showContext, uniqueWords, matches });
   } else {
-    handleWordMatches(term, { exact, showContext, matches });
+    handleWordMatches(searchTerm, { exact, showContext, matches });
   }
 
   if (matches.length === 0) {
-    container.innerHTML = `<p>No verses found containing "${term}".</p>`;
+    container.innerHTML = `<p>No verses found containing "${searchTerm}".</p>`;
     return;
   }
   //console.log(matches)
@@ -1920,20 +1928,20 @@ function setReferenceRange({ b, c, v }) {
   verseEnd.value = endBCV[2];
 }
 
-function handleLookupMatches(term, { exact, showContext, uniqueWords, matches }) {
+function handleLookupMatches(searchTerm, { exact, showContext, uniqueWords, matches }) {
   const morphMatches = [];
-  const latinTerm = toLatin(term);
+  const latinTerm = toLatin(searchTerm);
 
   for (let i = 0; i < lookupdb.length; i++) {
     const [grk, morph, strongs, root, rEng] = lookupdb[i];
     const rootParts = (root || "").split(',').map(r => r.trim());
 
     if (
-      matchMorphTag(term, morph) ||
-      term === String(strongs) ||
+      matchMorphTag(searchTerm, morph) ||
+      searchTerm === String(strongs) ||
       rootParts.some(r => latinTerm === "." + r) ||
       (exact ? grk === latinTerm : grk.includes(latinTerm)) ||
-      (exact ? rEng === term : rEng.includes(term))
+      (exact ? rEng === searchTerm : rEng.includes(searchTerm))
     ) {
       if (uniqueWords) {
         matches.push([i, rEng, ""]);
@@ -1975,7 +1983,10 @@ function handleWordMatches(term, { exact, showContext, matches }) {
         return eng.toLowerCase() === searchTerm;
       }
     } else {
-      const grk = lookupdb[ident]?.[0] || "";
+      let grk = lookupdb[ident]?.[0] || "";
+      if (typeof ident === "string" && /^[A-Za-z]+$/.test(ident)) {
+        grk = ident;
+      }
 
       return exact
         ? (isGreek ? grk === searchTerm : (eng || "").toLowerCase() === searchTerm)
