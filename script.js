@@ -376,7 +376,7 @@ function setupEventListeners() {
   // For checkboxes or inputs that trigger searchVerses
   [
     "searchBtn", "centerRange", "showContext", "exactMatch",
-    "uniqueWords", "ordered", "adjacent"
+    "uniqueWords", "ordered", "adjacent", "normalized"
   ].forEach(id => {
     const el = elements[id];
     const event = id === "searchBtn" ? "click" : "change";
@@ -1888,9 +1888,9 @@ function searchVerses() {
   }
 
   if (inLookups || uniqueWords) {
-    handleLookupMatches(searchTerm, { exact, showContext, uniqueWords, matches });
+    handleLookupMatches(searchTerm, matches);
   } else {
-    handleWordMatches(searchTerm, { exact, showContext, matches });
+    handleWordMatches(searchTerm, matches);
   }
 
   if (matches.length === 0) {
@@ -1934,7 +1934,10 @@ function setReferenceRange({ b, c, v }) {
   verseEnd.value = endBCV[2];
 }
 
-function handleLookupMatches(searchTerm, { exact, showContext, uniqueWords, matches }) {
+function handleLookupMatches(searchTerm, matches) {
+  const exact = elements.exactMatch.checked;
+  const showContext = elements.showContext.checked;
+  const uniqueWords = elements.uniqueWords.checked;
   const morphMatches = [];
   const latinTerm = toLatin(searchTerm);
 
@@ -1974,19 +1977,22 @@ function handleLookupMatches(searchTerm, { exact, showContext, uniqueWords, matc
   });
 }
 
-function handleWordMatches(term, { exact, showContext, matches }) {
+function handleWordMatches(term, matches) {
+  const normalized = elements.normalized.checked;
+  const exact = elements.exactMatch.checked;
+  const showContext = elements.showContext.checked;
   const lowerTerm = term.toLowerCase();
   const isGreek = [...lowerTerm].some(ch => Object.values(greekToUnicode).includes(ch));
   const searchTerm = isGreek ? toLatin(lowerTerm) : lowerTerm;
 
   const wordMatches = (eng, ident) => {
-    if (exact && !isGreek) {
-      const lookupEntry = lookupdb[ident]?.[0] || ""; // ident is now the index
-      if (lookupEntry && lookupEntry.length > 3) {
+    if (normalized && !isGreek) {
+      const lookupEntry = lookupdb[ident]; // ident is now the index
+      if (lookupEntry && lookupEntry.length > 4) {
         // Use normalized Latin form from lookupdb if available
-        return lookupEntry[3] === searchTerm;
+        return exact ? lookupEntry[4] === searchTerm : lookupEntry[4].includes(searchTerm);
       } else {
-        return eng.toLowerCase() === searchTerm;
+        return exact ? eng.toLowerCase() === searchTerm : eng.toLowerCase().includes(searchTerm);
       }
     } else {
       let grk = lookupdb[ident]?.[0] || "";
@@ -2051,14 +2057,14 @@ function multiWordSearch(searchStr, options) {
         if (!grk) return false;
         return exact ? grk === word : grk.includes(word);
       } else {
-        // latin input, check rEng (value[3])
-        const rEng = value[3];
+        // latin input, check rEng (value[4])
+        const rEng = value[4];
         if (!rEng) return false;
         return exact ? rEng === word : rEng.includes(word);
       }
     }).map(([ident, value]) => value);
 
-    const totalCount = matches.reduce((sum, entry) => sum + (entry[4] || 0), 0);
+    const totalCount = matches.reduce((sum, entry) => sum + (entry[5] || 0), 0);
     
     return { word, totalCount };
   });
@@ -2076,11 +2082,11 @@ function multiWordSearch(searchStr, options) {
     const containsRare = verseWords.some(([ident, eng]) => {
       let checkVal;
 
-      if (exact && !isGreek && normalized) {
+      if (normalized && !isGreek) {
         // Pull rEng from lookupdb using ident
-        const lookupEntry = lookupdb[ident]?.[0] || "";
-        if (lookupEntry && lookupEntry.length > 3) {
-          checkVal = lookupEntry[3]; // rEng
+        const lookupEntry = lookupdb[ident];
+        if (lookupEntry && lookupEntry.length > 4) {
+          checkVal = lookupEntry[4]; // rEng
         } else {
           checkVal = (eng || "").toLowerCase();
         }
@@ -2131,11 +2137,7 @@ function multiWordSearch(searchStr, options) {
     // checkWordSequence needs to be updated to accept this word structure and 
     // also optionally return matched token indices or locations
 
-    const matchResult = checkWordSequence(allWords, latinWords, isGreek, {
-      exact,
-      ordered,
-      adjacent
-    });
+    const matchResult = checkWordSequence(allWords, latinWords, isGreek);
 
     // If matchResult is false => no match, else matchResult can be e.g. array of matched indices
 
@@ -2164,7 +2166,11 @@ function multiWordSearch(searchStr, options) {
   return results;
 }
 
-function checkWordSequence(allWords, latinWords, isGreek, { exact, ordered, adjacent, matchIdent = false }) {
+function checkWordSequence(allWords, latinWords, isGreek, matchIdent = false) {
+  const exact = elements.exactMatch.checked;
+  const normalized = elements.normalized.checked;
+  const ordered = elements.ordered.checked;       // new checkbox for ordered matching
+  const adjacent = elements.adjacent.checked;     // new checkbox for adjacent matching
   if (!latinWords || latinWords.length === 0) return false;
 
   // Extract normalized words from allWords tokens
@@ -2174,11 +2180,11 @@ function checkWordSequence(allWords, latinWords, isGreek, { exact, ordered, adja
     }
 
     const [ident, eng] = wordData;  // ident is first now
-    if (exact && !isGreek) {
+    if (normalized && !isGreek) {
       // Pull rEng from lookupdb using ident
-      const lookupEntry = lookupdb[ident]?.[0] || "";
-      if (lookupEntry && lookupEntry.length > 3) {
-        return lookupEntry[3]; // rEng
+      const lookupEntry = lookupdb[ident];
+      if (lookupEntry && lookupEntry.length > 4) {
+        return lookupEntry[4]; // rEng
       } else {
         return (eng || "").toLowerCase();
       }
@@ -2384,12 +2390,7 @@ function multiWordSearchLookupDB(searchStr, lookupInd) {
     });
     
     // Run checkWordSequence with lookupTerms instead of latinWords
-    const matchResult = checkWordSequence(allWords, lookupTerms, true /*isGreek*/, {
-      exact: true, // always exact for inLookups
-      ordered,
-      adjacent,
-      matchIdent: true
-    });
+    const matchResult = checkWordSequence(allWords, lookupTerms, true /*isGreek*/, true /*search by ident*/);
 
     if (matchResult) {
       // Verify if any matched token is from the original verse (b,c,v)
