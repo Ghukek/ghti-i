@@ -881,7 +881,7 @@ function render(customVerses = null) {
         let grk = "", pcode = "", strongs = "", roots = "", count = 0;
 
         if (typeof ident === "string" && /^[A-Za-z]+$/.test(ident)) {
-          // ident is a Latin string
+          // ident is actually the greek word from LXX auto-fill.
           grk = ident;
         } else {
           // ident is numeric, get data from lookupdb
@@ -1157,7 +1157,7 @@ function renderSingleVerse(container, book, chapter, verse, verseData, options, 
         const rEngSet = new Set();
         let totalCount = 0;
 
-        for (const [pc, st, rt, re, ct] of matches) {
+        for (const [_, pc, st, rt, re, ct] of matches) {
           if (pc) pcodeSet.add(pc);
           if (st) strongsSet.add(st);
           if (rt) rootsSet.add(rt);
@@ -1427,16 +1427,18 @@ function showPopup(e) {
     popupContent += clickableLine('MorphCode', pcode);
   }
 
-  popupContent += '<strong>Morphology:</strong> ' + parseMorphTag(pcode) + '<br>';
+  if (pcode) {
+    popupContent += '<strong>Morphology:</strong> ' + parseMorphTag(pcode) + '<br>';
+  }
 
   if (!showStrongs) {
     popupContent += clickableLine("Strong's", strongs);
   }
 
-  if (!showRoots && rootsDisplay) {
+  if (!showRoots && rootsDisplay ) {
     const rootParts = rootsDisplay.split(',').map(r => r.trim());
 
-    if (rootParts.length === 1) {
+    if (rootParts.length === 1 && rootParts[0] !== "&nbsp;") {
       // Single root – just make it clickable with no colon
       popupContent += `<strong>Roots:</strong> <span class="popup-clickable" data-search=".${rootParts[0]}">${rootParts[0]}</span><br>`;
     } else if (rootParts.length > 1) {
@@ -1450,12 +1452,16 @@ function showPopup(e) {
     }
   }
 
-  if (!pEng) {
+  if (!pEng && target.dataset.rEng) {
     popupContent += '<strong>Translations:</strong> ' + target.dataset.rEng + '<br>';
   }
 
   if (popupContent.endsWith('<br>')) {
     popupContent = popupContent.slice(0, -4);
+  }
+
+  if (popupContent.length === 0) {
+    popupContent = "[No info]"
   }
 
   popup.innerHTML = popupContent;
