@@ -1640,8 +1640,7 @@ function parseCGPN(cgpn) {
     'S': 'singular', 'P': 'plural'
   };
 
-  // Handle multiple options like BNP/AMS
-  return cgpn.split('/').map(option => {
+  const options = cgpn.split('/').map(option => {
     let index = 0;
     const attrs = [];
 
@@ -1664,8 +1663,13 @@ function parseCGPN(cgpn) {
       attrs.push(numberMap[option[index].toUpperCase()]);
     }
 
-    return "(" + attrs.join(', ') + ")";
-  }).join(" or ");
+    return attrs.join(', ');
+  });
+
+  // Only wrap with parentheses if multiple options
+  return options.length > 1
+    ? options.map(o => `(${o})`).join(" or ")
+    : options[0];
 }
 
 function matchMorphTag(pattern, tag) {
