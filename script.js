@@ -124,18 +124,37 @@ function toggleHelpPopup() {
   }
 }
 
-let last_updated = document.lastModified; 
-const date = new Date(last_updated);
-const formatted = date.toLocaleDateString('en-GB', {
-  day: 'numeric',
-  month: 'short',
-  year: 'numeric',
-});
-const time = date.toLocaleTimeString('en-GB', {
-  hour: '2-digit',
-  minute: '2-digit',
-});
-document.getElementById("tool_last_updated").textContent = `${formatted} ${time}`;
+async function getLastModified(url) {
+  try {
+    const res = await fetch(url, { method: "HEAD", cache: "no-store" });
+    const lastMod = res.headers.get("Last-Modified");
+    return lastMod ? new Date(lastMod) : null;
+  } catch (e) {
+    console.warn("Failed to fetch", url, e);
+    return null;
+  }
+}
+
+async function updateToolLastUpdated() {
+  const files = ["ght-i.html", "styles.css", "script.js"];
+  const dates = await Promise.all(files.map(f => getLastModified(f)));
+  const latest = dates.filter(d => d).sort((a,b) => b - a)[0]; // newest first
+
+  if (latest) {
+    const formatted = latest.toLocaleDateString('en-GB', {
+      day: 'numeric', month: 'short', year: 'numeric'
+    });
+    const time = latest.toLocaleTimeString('en-GB', {
+      hour: '2-digit', minute: '2-digit'
+    });
+    document.getElementById("tool_last_updated").textContent = `${formatted} ${time}`;
+  } else {
+    document.getElementById("tool_last_updated").textContent = "unknown";
+  }
+}
+
+// Run it
+updateToolLastUpdated();
 
 let baseData; // This will hold the base JSON data loaded from base.json
 let lookupdb; // This will hold the lookup data loaded from lookups.json
@@ -182,10 +201,36 @@ function loadBaseJson() {
     } else {
       render();
     }
+    getCount();
   })
   .catch(err => {
     console.error("Error loading JSON files:", err);
   });
+}
+
+function getCount() {
+  let countWithIdent = 0;
+
+  for (let b = 39; b <= 65; b++) {
+    if (!baseData[b]) continue; // skip if book missing
+    const book = baseData[b];
+    for (let c = 0; c < book.length; c++) {
+      const chapter = book[c];
+      for (let v = 0; v < chapter.length; v++) {
+        const verse = chapter[v];
+        for (let w = 0; w < verse.length; w++) {
+          const word = verse[w];
+          if (word.ident !== -1) countWithIdent++;
+        }
+      }
+    }
+  }
+
+  const totalWords = 140146;
+  const percentage = (countWithIdent / totalWords) * 100;
+
+  //document.getElementById("count").textContent = countWithIdent;
+  document.getElementById("percentage").textContent = percentage.toFixed(2) + "%";
 }
 
 const elements = {};
