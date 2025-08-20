@@ -101,13 +101,12 @@
   </div>
   <body>
     <div id="navHeader">
-    <button onclick="updateBCV(-3)">◀◀◀</button>
-    <button onclick="updateBCV(-2)">◀◀</button>
-    <button onclick="updateBCV(-1)">◀</button>
-    Navigate
-    <button onclick="updateBCV(1)">▶</button>
-    <button onclick="updateBCV(2)">▶▶</button>
-    <button onclick="updateBCV(3)">▶▶▶</button>
+    <button onclick="updateBCV(-3)">◀Book</button>
+    <button onclick="updateBCV(-2)">◀Chapter</button>
+    <button onclick="updateBCV(-1)">◀Verse</button>
+    <button onclick="updateBCV(1)">Verse▶</button>
+    <button onclick="updateBCV(2)">Chapter▶</button>
+    <button onclick="updateBCV(3)">Book▶</button>
   </div>
   <!-- History Buttons -->
   <div id="historyButtons" style="
@@ -149,6 +148,7 @@
       <li>Exact Match: When checked, the search will only show words that are exactly as what you typed in (case insensitive). Otherwise, it will return all partial matches. When searching in English, "exact match" will take out any punctuation and add implied "of{" or "to{" brackets, such that if you were to search for "of{jesus}", you would find all cases of ιησου translated to the genitive case.</li>
       <li>Center Ref: When checked, this will center the verse containing the search terms in its context. Otherwise, the verse containing the search terms will be shown as the start of its context. For example, with a context of 5 verses, "the jesus tears." will show John 11:35-39 when unchecked or John 11:33-37 when checked.</li>
       <li>Show Context: When checked, this will return search results in the verse they appear in plus as much surrounding context as the user selects using 'Verse Range'. Otherwise it will just return a list of search results and the verse reference they appear in.</li>
+      <li>Normalize English: When checked, this will ignore punctuation and pull text out of nested brackets. For example, a search for "of{Jesus}" will not show cases of "of{the Jesus}" unless this is checked. </li>
       <li>Unique Words: When checked, this will only show uniqe word pairs rather than every result. This is useful if a user is trying to look at all the different ways a specific word may be translated or inflected.</li>
       <li>Ordered: When searching for multiple words, this forces the words to appear in the order they were searched. So, "Jesus Anointed" will not return verses that have "Anointed Jesus" (e.g. Acts 5:42). Note that this setting will work for whichever word order you have currently checked. Thus, "ου μη" (Exact Match, Ordered, Adjacent) will return a lot of results in interlinear order, but zero in reverse interlinear.</li>
       <li>Adjacent: When searching for multiple words, this forces the words to be adjacent to each other. So, "Jesus Anointed" will not return "Jesus, the being-said 'Anointed'" (e.g. Matthew 1:18). </li>
