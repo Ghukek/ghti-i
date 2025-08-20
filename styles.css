@@ -64,6 +64,7 @@ body {
   display: flex;
   align-items: center; /* vertically centers child elements */
   flex-wrap: wrap;
+  margin-bottom: 10px;
 }
 
 .verse-label {
@@ -256,6 +257,7 @@ select {
   border: none;
   border-top: 1px solid black;
   width: 100%;
+  margin-top: 0;
 }
 
 .popup.help-popup {
