@@ -21,24 +21,24 @@ body {
 }
 
 .grk { 
-  color: darkred; 
+  color: rgb(124, 0, 0); 
   cursor: pointer;
 }
 
 .eng { 
-  color: darkgreen; 
+  color: rgb(0, 75, 0); 
   cursor: pointer;
 }
 
 .pcode {
-  font-size: 0.6em;
+  font-size: 0.7em;
   color: #4B2E1D;
   cursor: pointer;
 }
 
 .roots {
-  font-size: 0.9em;
-  color: darkred;
+  font-size: 0.85em;
+  color: rgb(160, 0, 0);
   cursor: pointer;
 }
 
@@ -149,11 +149,11 @@ select {
 }
 
 .word-list-grid .english {
-  color: darkgreen;
+  color: rgb(0, 75, 0);
 }
 
 .word-list-grid .greek {
-  color: darkred;
+  color: rgb(124, 0, 0);
 }
 
 .col.reference {
