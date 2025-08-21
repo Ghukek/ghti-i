@@ -17,7 +17,25 @@
 
 body { 
   font-family: "Times New Roman"; 
+  margin: 1rem;
+  background-color: #fdfdf5; /* light off-white */
+}
+
+#header {
+  background-color: #e0d4bb;   /* light gray background */
   padding: .5rem; 
+  padding-top: 1rem;             /* space inside */
+  margin-bottom: .5rem;
+  text-align: center;         /* center the content */
+}
+
+#historyButtons {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  gap: 5px;
+  z-index: 1000;
 }
 
 .grk { 
@@ -44,6 +62,12 @@ body {
 
 .roots:hover, .pcode:hover, .eng:hover, .grk:hover, .col:hover, #toggleGreekHelp:hover {
   background-color: #f0e9d8; /* light tan, less red */
+}
+
+.hi {
+  background: #f0e9d8;
+  padding: 0 .15em;
+  font-weight: bold;
 }
 
 .grk, .eng, .pcode, .roots {
@@ -80,7 +104,7 @@ select {
 
 .popup {
   position: absolute;
-  background: white;
+  background: #fdfdf5;
   border: 1px solid #666;
   padding: 8px;
   border-radius: 6px;
@@ -96,7 +120,7 @@ select {
 .popup {
   display: none;
   position: absolute;
-  background-color: #f9f9f9;
+  background-color: #fdfdf5;
   padding: 12px;
   border: 1px solid #ccc;
   box-shadow: 0 4px 8px rgba(0,0,0,0.2);
@@ -108,7 +132,7 @@ select {
   bottom: 0;
   left: 0;
   width: 100%;
-  background: white;
+  background: #fdfdf5;
   padding: 2px 4px;
   border-top: 1px solid #ccc;
   display: flex;
@@ -180,6 +204,13 @@ select {
 
 input[type="checkbox"] {
   cursor: pointer;
+  background-color: #fdfdf5
+}
+
+input[type="text"],
+input[type="number"],
+select {
+  background-color: #fdfdf5
 }
 
 .popup-clickable {
@@ -208,6 +239,15 @@ label:has(input[type="checkbox"]) {
 
 button {
   cursor: pointer;
+  background-color: #eae4d4;   /* normal */
+  color: #000000;              /* earthy text color */
+  border: 1px solid #d0c6b4;   /* subtle border */
+  border-radius: 3px;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: #ddd6c4;   /* darker on hover */
 }
 
 select {
@@ -241,7 +281,7 @@ select {
   position: fixed;
   top: 10px;  /* adjust to move it down */
   left: 10px;  /* adjust to move it to the right */
-  background: white;
+  background: #fdfdf5;
   border: 1px solid #ccc;
   padding: 4px;
   z-index: 100;
@@ -261,15 +301,12 @@ select {
 }
 
 .popup.help-popup {
-  position: absolute;
-  max-width: 100%;
-  max-height: 100%;
-  overflow-y: auto;
-  background: white;
+  background: #fdfdf5;
   border: 1px solid black;
   padding: 15px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.2);
   z-index: 1000;
+  box-sizing: border-box;
 }
 
 .popup.help-popup .help-content {

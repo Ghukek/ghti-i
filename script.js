@@ -104,24 +104,38 @@ function togglePopup(id) {
   }
 }
 
-function toggleHelpPopup() {
-  const popup = document.getElementById('helpPopup');
-  const button = document.getElementById('helpButton');
+function toggleHelpPopup(pop, but) {
+  const popup = document.getElementById(pop);
+  const button = document.getElementById(but);
+
   if (popup.style.display === 'block') {
     popup.style.display = 'none';
-  } else {
-    // Close any other popups if needed
-    document.querySelectorAll('.popup').forEach(p => {
-      if (p !== popup) p.style.display = 'none';
-    });
-
-    popup.style.display = 'block';
-
-    // Position popup near the button
-    const rect = button.getBoundingClientRect();
-    popup.style.top = `${rect.bottom + window.scrollY}px`;
-    popup.style.left = `${rect.left + window.scrollX}px`;
+    return;
   }
+
+  // Close other popups
+  document.querySelectorAll('.popup').forEach(p => {
+    if (p !== popup) p.style.display = 'none';
+  });
+
+  const rect = button.getBoundingClientRect();
+  const viewportHeight = window.innerHeight;
+
+  // Space available below the button
+  const availableHeight = viewportHeight - (rect.bottom + 8);
+
+  Object.assign(popup.style, {
+    display: 'block',
+    position: 'fixed',
+    left: '20px',
+    right: '20px',
+    width: 'auto',
+    maxWidth: 'none',
+    boxSizing: 'border-box',
+    top: `${rect.bottom + 8}px`,
+    maxHeight: `${availableHeight - 20}px`, // leave bottom margin
+    overflowY: 'auto'
+  });
 }
 
 async function getLastModified(url) {
@@ -482,9 +496,9 @@ function initializeSelections() {
     });
   }
 
-  if (range?.gapInput != null) {
+  if (range?.gapInput > 0) {
     elements.gapInput.value = range.gapInput;
-  } else if (settings?.gapInput != null) {
+  } else if (settings?.gapInput > 0) {
     elements.gapInput.value = settings.gapInput;
   } else {
     elements.gapInput.value = Math.floor(Math.random() * (20 - 2 + 1)) + 2; // random 2–20
@@ -878,15 +892,15 @@ function render(customVerses = null) {
         const row = document.createElement("div");
         row.className = "word-row";
 
-        let grk = "", pcode = "", strongs = "", roots = "", count = 0;
+        let grk = "", pcode = "", strongs = "", roots = "", cEng = "", count = 0;
 
         if (typeof ident === "string" && /^[A-Za-z]+$/.test(ident)) {
           // ident is actually the greek word from LXX auto-fill.
           grk = ident;
         } else {
           // ident is numeric, get data from lookupdb
-          const lookupData = lookupdb[ident] || [];
-          [grk, pcode, strongs, roots, count] = lookupData;
+          const lookupData = lookupdb[ident] || [];   
+          [grk, pcode, strongs, roots, cEng, count] = lookupData;
         }
 
         if (ref !== "") {
@@ -1140,8 +1154,7 @@ function renderSingleVerse(container, book, chapter, verse, verseData, options, 
 
     if (Number.isInteger(ident) && ident !== -1) { //Refactor moved this block earlier.
       // Normal case: lookup by ident
-      const key = `${ident}`;
-      const lookupData = lookupdb[key] || [];
+      const lookupData = lookupdb[ident] || [];
       [grk, pcode, strongs, roots, rEng, count] = lookupData; //Refactor added grk to beginning.
     } else if (ident != -1) {
       grk = ident;
@@ -1942,6 +1955,8 @@ function handleLookupMatches(searchTerm, matches) {
   const latinTerm = toLatin(searchTerm);
 
   for (let i = 0; i < lookupdb.length; i++) {
+    if (!lookupdb[i] || lookupdb[i].length === 0) continue;
+
     const [grk, morph, strongs, root, rEng] = lookupdb[i];
     const rootParts = (root || "").split(',').map(r => r.trim());
 

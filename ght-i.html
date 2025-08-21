@@ -22,12 +22,14 @@
     document.head.appendChild(style);
   </script>
 </head>
-  <h1>GHT Study Tool</h1>
-  <button title="Show help about using the page" id="helpButton" onclick="toggleHelpPopup()">Help</button>
-  <a href="https://www.wiebefamily.org/GHT.htm" target="_blank" rel="noopener noreferrer">GHT Source</a>&nbsp;(<b id="percentage">0%</b>&nbsp;translated)
-  <br>Data last updated: <b style="color: #bb0000"></i><i id="data_last_updated"></i></b><i> (your local time)</i>
-  <br>Tool last updated: <b style="color: #bb0000"></i><i id="tool_last_updated"></i></b><i> (your local time)</i>
-  <br><br>
+  <div id="header">
+    <h1>GHT Study Tool</h1>
+    <button title="Show help about using the page" id="helpButton" onclick="toggleHelpPopup('helpPopup','helpButton')">Help</button>
+    <button title="Abbreviated info from source introduction." id="readmeButton" onclick="toggleHelpPopup('readmePopup','readmeButton')">Read Me</button>
+    <a href="https://www.wiebefamily.org/GHT.htm" target="_blank" rel="noopener noreferrer">GHT Source</a>&nbsp;(<b id="percentage">0%</b>&nbsp;translated)
+    <br>Data last updated: <b style="color: #bb0000"></i><i id="data_last_updated"></i></b><i> (your local time)</i>
+    <br>Tool last updated: <b style="color: #bb0000"></i><i id="tool_last_updated"></i></b><i> (your local time)</i>
+  </div>
   <span class="head-group">
     <label>Start Ref: <select id="bookStart" data-id></select></label>
     <select id="chapterStart" data-id></select>
@@ -109,14 +111,7 @@
     <button onclick="updateBCV(3)">Book▶</button>
   </div>
   <!-- History Buttons -->
-  <div id="historyButtons" style="
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      display: flex;
-      gap: 5px;
-      z-index: 1000;
-  ">
+  <div id="historyButtons">
     <button id="historyBackBtn" title="Undo last change">← Back</button>
     <button id="historyForwardBtn" title="Redo last change">Forward →</button>
   </div>
@@ -161,7 +156,39 @@
     <h3>Copy text:</h3>
     <p>For now, these only work for text showing on screen. They will copy all Greek or English text to your clipboard when you are verse-display mode.</p>
   </div>
-  <button class="close-btn" onclick="toggleHelpPopup()">Close</button>
+  <button class="close-btn" onclick="toggleHelpPopup('helpPopup','helpButton')">Close</button>
+</div>
+<div id="readmePopup" class="popup help-popup" style="display:none;">
+  <div class="help-content">
+    <h2 style="margin-top: 0;">
+      Important Translator Notes 
+    </h2>
+    <p>The following is small selectiong from Garth's introduction. For more information, click on "GHT Source" and click on "Introduction (Please read!)..."</p>
+    <h3><span class="hi">Notation</span>, punctuation, capitalization</h3>
+    <p>Every word, or construction between spaces, including possible hyphens and slash characters, or as demarcated within underscore characters, maps to one, single, corresponding word in the original Greek text, unless it is in square brackets.  I separately translate every single word in the Greek, something that no other translation does. I use</p>
+    <ul>
+      <li><span class="hi">square brackets</span> to denote something I have added for clarity that is not in the original text.</li>
+      <li>An <span class="hi">[ing]</span> on a participle means it is an aorist or future participle, not a present participle.</li>
+      <li>As noted in more detail below, I use 
+        <ul>
+          <li><span class="hi">curly brackets</span> to denote dative and genitive cases and </li>
+          <li>a <span class="hi">colon</span> to denote third-person imperatives.</li>
+        </ul>
+      </li>
+      <li>I liberally use
+        <ul>
+          <li><span class="hi">hyphens</span> to bring out etymological/morphemes, compound words, and single words from the original that do not have a single English correspondence but can be expressed using multiple English words and/or English morphemes, and</li>
+          <li><span class="hi">underscore</span> to insert separate original words into a hyphenated sequence (usually "_not_").</li>
+        </ul>
+      </li>
+      <li>I use the <span class="hi">slash character</span> where I need to convey that a word could be either one or the other English word, or a sense of both or something in between.</li>
+    </ul>
+    <p>Since interrogatives are not punctuated in the Greek, and are not even explicit, I let the text flow as in the original and insert question mark characters in square brackets.  Beyond that, punctuation is simply a best-effort attempt to follow English convention.  There is little to no punctuation in the original Greek text, and not in the English sense or English convention.  I capitalize proper names as in English, but there is no capitalization scheme in Greek.  Verse number placement adheres to the convention originated by the Geneva Bible.</p>
+    <h3>Important points in lexicality and grammar, issues</h3>
+    <p>I use "of{}" and "to{}" for genitive and dative cases, respectively, but everyone should keep in mind that these are not prepositions, nor do they, without actual prepositions, create prepositional phrases in the original Greek.  The genitive case simply points from an object and the dative case to an object.  However, when I create an English prepositional phrase from it, I don't always keep prefixing every consecutive genitive or dative word accordingly.  Instead, I enclose multiple separate words in curly brackets, which are all genitive or dative, as the case may be.</p>
+    <p>The Greek language has both second and third person imperative verbs, whereas English only has second person imperatives.  To translate the third person, I construct the phrase using a colon.  For example, Matt 5:16, "the light of you: shine," such that it is the light that is being given the imperative, the command, not the person being addressed.  This eliminates the traditional use of "let" (e.g. "let your light shine"), where "let" is a verb that only means "allow," still in the second person, and does not bring out the imperative sense of the actual verb (i.e. "allow your light to shine" has "allow" as an imperative in the second person and "shine" as an infinitive). </p>
+  </div>
+  <button class="close-btn" onclick="toggleHelpPopup('readmePopup','readmeButton')">Close</button>
 </div>
 </html>
 
