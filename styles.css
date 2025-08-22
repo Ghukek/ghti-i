@@ -60,7 +60,7 @@ body {
   cursor: pointer;
 }
 
-.roots:hover, .pcode:hover, .eng:hover, .grk:hover, .col:hover, #toggleGreekHelp:hover {
+.roots:hover, .pcode:hover, .eng:hover, .grk:hover, .col:hover, .verse-label:hover, #toggleGreekHelp:hover {
   background-color: #f0e9d8; /* light tan, less red */
 }
 
