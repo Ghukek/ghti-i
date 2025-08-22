@@ -2058,7 +2058,7 @@ function multiWordSearch(searchStr, options) {
   if (isGreek) {
     latinWords = words.map(w => toLatin(w));
   } else {
-    latinWords = words;
+    latinWords = words.map(w => w.toLowerCase());
   }
 
   // 1. Lookup matches & counts
