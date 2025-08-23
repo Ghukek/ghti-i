@@ -208,7 +208,6 @@ function loadBaseJson() {
     baseData = baseJson;
     lookupdb = lookupsJson; // or whatever variable you're using for the lookup table
     initializeSelections();
-    // loadSettings();
     setupEventListeners();
     if (currentRender === "search") {
       searchVerses();
@@ -483,17 +482,16 @@ function initializeSelections() {
   const settings = JSON.parse(localStorage.getItem("userSettings"));
 
   if (settings) {
-    const checkboxes = [
-      "enforceGap", "showGreek", "showEnglish", "showPcode",
-      "showStrongs", "showRoots", "showVerses",
-      "newlineAfterVerse", "reverseInterlinear"
-    ];
+    for (const [key, value] of Object.entries(settings)) {
+      const el = elements[key] || document.getElementById(key);
+      if (!el) continue;
 
-    checkboxes.forEach(id => {
-      if (settings[id] !== undefined) {
-        document.getElementById(id).checked = settings[id];
+      if ("checked" in el) {
+        el.checked = value;
+      } else if ("value" in el) {
+        el.value = value;
       }
-    });
+    }
   }
 
   if (range?.gapInput > 0) {
@@ -1536,25 +1534,18 @@ function showPopupTouchEnd(e) {
 }
 
 function saveSettings() {
-  const settings = {
-    bookStart: elements.bookStart.value,
-    chapterStart: elements.chapterStart.value,
-    verseStart: elements.verseStart.value,
-    bookEnd: elements.bookEnd.value,
-    chapterEnd: elements.chapterEnd.value,
-    verseEnd: elements.verseEnd.value,
-    gapInput: elements.gapInput.value,
-    enforceGap: elements.enforceGap.checked,
+  const settings = {};
 
-    showGreek: elements.showGreek.checked,
-    showEnglish: elements.showEnglish.checked,
-    showPcode: elements.showPcode.checked,
-    showStrongs: elements.showStrongs.checked,
-    showRoots: elements.showRoots.checked,
-    showVerses: elements.showVerses.checked,
-    newlineAfterVerse: elements.newlineAfterVerse.checked,
-    reverseInterlinear: elements.reverseInterlinear.checked,
-  };
+  for (const [key, el] of Object.entries(elements)) {
+    if (!el) continue;
+
+    if ("checked" in el) {
+      settings[key] = el.checked;
+    } else if ("value" in el) {
+      settings[key] = el.value;
+    }
+  }
+
   localStorage.setItem("userSettings", JSON.stringify(settings));
 }
 
