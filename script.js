@@ -381,7 +381,7 @@ function setupEventListeners() {
   // For checkboxes that trigger onOptionsChange
   [
     "showGreek", "showEnglish", "showPcode", "showVerses",
-    "showStrongs", "showRoots", "newlineAfterVerse", "reverseInterlinear"
+    "showStrongs", "showRoots", "newlineAfterVerse", "reverseInterlinear", "highlightSearch"
   ].forEach(id => {
     elements[id].addEventListener("change", onOptionsChange);
   });
@@ -638,6 +638,8 @@ function saveUrlSearch() {
   const centerRange = elements.centerRange?.checked;
   const ordered = elements.ordered?.checked;
   const adjacent = elements.adjacent?.checked;
+  const reverseInterlinear = elements.reverseInterlinear?.checked;
+  const highlightSearch = elements.highlightSearch?.checked;
 
   if (searchInput) params.set("search", searchInput);
   if (exactMatch) params.set("e", "1");
@@ -650,6 +652,10 @@ function saveUrlSearch() {
   if (centerRange) params.set("s", "1");
   if (ordered) params.set("o", "1");
   if (adjacent) params.set("a", "1");
+  if (showContext) {
+    if (!reverseInterlinear) params.set("r", "0");
+    if (!highlightSearch) params.set("h", "0");
+  }
 
   const baseUrl = window.location.origin + window.location.pathname;
   const newUrl = `${baseUrl}?${params.toString()}`;
@@ -685,6 +691,8 @@ function applyUrlSearch() {
   elements.centerRange.checked = params.get("s") === "1";
   elements.ordered.checked = params.get("o") === "1";
   elements.adjacent.checked = params.get("a") === "1";
+  elements.reverseInterlinear.checked = params.get("r") !== "0";
+  elements.highlightSearch.checked = params.get("h") !== "0";
 
   if (params.has("g")) elements.gapInput.value = params.get("g");
 
@@ -1149,10 +1157,11 @@ function renderSingleVerse(container, book, chapter, verse, verseData, options, 
     wordEl.className = "word";
 
     let grk, pcode, strongs, roots, rEng, count;
+    let lookupData = [];
 
     if (Number.isInteger(ident) && ident !== -1) { //Refactor moved this block earlier.
       // Normal case: lookup by ident
-      const lookupData = lookupdb[ident] || [];
+      lookupData = lookupdb[ident] || [];
       [grk, pcode, strongs, roots, rEng, count] = lookupData; //Refactor added grk to beginning.
     } else if (ident != -1) {
       grk = ident;
@@ -1206,6 +1215,28 @@ function renderSingleVerse(container, book, chapter, verse, verseData, options, 
     } else {
       pEng = eng;
       localPassUnderscore = 0; // safe reset
+    }
+
+    if (elements.highlightSearch.checked && elements.searchInput.value.trim() !== "") {
+      const searchTerms = elements.searchInput.value.trim().split(/\s+/);
+      let matched = false;
+
+      for (const term of searchTerms) {
+        // check each variable against this term
+        if (
+          matchesLookup(term, lookupData) || 
+          (
+            pEng &&
+            (elements.exactMatch.checked 
+              ? pEng.toLowerCase() === term.toLowerCase()
+              : pEng.toLowerCase().includes(term.toLowerCase())) 
+          )
+        ) {
+          matched = true;
+          wordEl.classList.add("highlightSearch");
+          break; // no need to keep checking once we found a match
+        }
+      } 
     }
 
     wordEl.dataset.grk = grk || "";
@@ -1901,7 +1932,7 @@ function searchVerses() {
     container.innerHTML = `<p>No verses found containing "${searchTerm}".</p>`;
     return;
   }
-  //console.log(matches)
+
   render(matches);
 }
 

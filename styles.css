@@ -22,7 +22,7 @@ body {
 }
 
 #header {
-  background-color: #e0d4bb;   /* light gray background */
+  background-color: #e0d4bb;   /* darker background */
   padding: .5rem; 
   padding-top: 1rem;             /* space inside */
   margin-bottom: .5rem;
@@ -32,7 +32,7 @@ body {
 #historyButtons {
   position: fixed;
   top: 1rem;
-  right: 1rem;
+  left: 1rem;
   display: flex;
   gap: 5px;
   z-index: 1000;
@@ -60,8 +60,25 @@ body {
   cursor: pointer;
 }
 
+/* Default hover */
 .roots:hover, .pcode:hover, .eng:hover, .grk:hover, .col:hover, .verse-label:hover, #toggleGreekHelp:hover {
-  background-color: #f0e9d8; /* light tan, less red */
+  background-color: #f0e9d8;
+}
+
+/* Highlighted default background */
+.highlightSearch {
+  background-color: #f0e9d8;
+}
+
+/* Override hover when inside .highlightSearch */
+.highlightSearch .roots:hover,
+.highlightSearch .pcode:hover,
+.highlightSearch .eng:hover,
+.highlightSearch .grk:hover,
+.highlightSearch .col:hover,
+.highlightSearch .verse-label:hover,
+.highlightSearch #toggleGreekHelp:hover {
+  background-color: #e0d4bb;
 }
 
 .hi {
