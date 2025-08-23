@@ -1779,20 +1779,23 @@ function tryParseReference(refString) {
 
 // Function to check if term is a possible match
 function lookInLookups(term) {
-  if (!term) return [false, null];
+  if (!term) return false;
+
+  // Check if contains + or |
+  if (term.includes('+') || term.includes('|')) return true;
 
   // Check if term is a number
-  if (!isNaN(term)) return [true, 2];
+  if (!isNaN(term)) return true;
 
   // Check if term starts with a period
-  if (term.startsWith('.')) return [true, 3];
+  if (term.startsWith('.')) return true;
 
   // Check if term starts with any of the prefixes
   if (Object.keys(posMap).some(posKey => term === posKey || term.startsWith(posKey + '-'))) {
-    return [true, 1]
+    return true
   }
 
-  return [false, null]
+  return false
 }
 
 function collectVerseMatches(b, c, v) {
@@ -1894,7 +1897,7 @@ function searchVerses() {
   // All below should now only return the word list. 
 
   const matches = [];
-  let [inLookups, lookupInd] = lookInLookups(searchTerm);
+  let inLookups = lookInLookups(searchTerm);
 
   // Case: Latin, not in lookups, and not normalized → raw term search
   if (!/[α-ω]/i.test(searchTerm) && !inLookups && !normalized && !uniqueWords) {
@@ -2109,7 +2112,7 @@ function multiWordSearch(searchStr, lookupInd) {
   // Build possible matches for each input word
   const lookupTerms = terms.map(term => {
     let normTerm = term;
-    const [inLookups, lookupInd] = lookInLookups(term);
+    const inLookups = lookInLookups(term);
 
     // Case: Latin, not in lookups, and not normalized → raw term search
     if (!/[α-ω]/i.test(term) && !inLookups && !normalized) {
@@ -2216,8 +2219,19 @@ function multiWordSearch(searchStr, lookupInd) {
 }
 
 function matchesLookup(term, value) {
-  const lowerTerm = typeof term === "string" ? term.toLowerCase() : term;
   const exact = elements.exactMatch.checked;
+
+  // Handle OR '|' first (lowest precedence)
+  if (term.includes('|')) {
+    return term.split('|').some(subTerm => matchesLookup(subTerm, value));
+  }
+
+  // Handle AND '+' next (higher precedence)
+  if (term.includes('+')) {
+    return term.split('+').every(subTerm => matchesLookup(subTerm, value));
+  }
+
+  const lowerTerm = typeof term === "string" ? term.toLowerCase() : term;
 
   // Check if term starts with any of the prefixes
   if (Object.keys(posMap).some(posKey => term === posKey || term.startsWith(posKey + '-'))) {

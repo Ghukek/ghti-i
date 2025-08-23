@@ -122,6 +122,8 @@
       How to Use This Tool 
       <a href="http://ghukek.com/ght.html" style="font-size: 0.6em; margin-left: 0.5em;">(More info and contact)</a>
     </h2>
+    <h3>Newest feature:</h3>
+    <p>Added ability to combine attribute search by using + or | symbols.</p>
     <h3>Selecting passages by reference:</h3>
     <p>Select your start and end book, chapter, and verse from "Start Ref" and "End Ref". </p>
     <p>You may manually adjust how many verses to show at a time to by changing 'Verse Range'. A 'Verse Range' of '1' will show one verse. </p>
@@ -148,7 +150,9 @@
       <li>Ordered: When searching for multiple words, this forces the words to appear in the order they were searched. So, "Jesus Anointed" will not return verses that have "Anointed Jesus" (e.g. Acts 5:42). Note that this setting will work for whichever word order you have currently checked. Thus, "ου μη" (Exact Match, Ordered, Adjacent) will return a lot of results in interlinear order, but zero in reverse interlinear.</li>
       <li>Adjacent: When searching for multiple words, this forces the words to be adjacent to each other. So, "Jesus Anointed" will not return "Jesus, the being-said 'Anointed'" (e.g. Matthew 1:18). </li>
     </ul>
-    <p>For multiple word searches, with everything unchecked, the search will check the entire selected context for the words, no matter how far apart, out of order, or partial matching they may be. To restrict your search, you would want to reduce the 'Verse Range', check 'Exact Match', 'Ordered', or 'Adjacent' and any combination of these.</p>
+    <p>You can combine search terms. A space-separated search ("[term1] [term2]") will find all places where both terms exist in any selected context. A symbol-separated search ("[term1]+[term2]" or "[term1]|[term2]") will get any word that matches both or either search term respectively. You can combine space-separated searches and symbol-separated searches. You may use as many terms as you want.</p>
+    <p>For multiple-word searches, with everything unchecked, the search will check the entire selected context for the words, no matter how far apart, out of order, or partial matching they may be. To restrict your search, you would want to reduce the 'Verse Range', check 'Exact Match', 'Ordered', or 'Adjacent' and any combination of these.</p>
+    <p>To search multiple attributes, use the + symbol to request that both search terms be applied. For example "Jesus+N-AMS" will only get cases where Jesus is the object of a verb. You can also use the | symbol to request either case, for example "Jesus|Anointed" will get all cases of Jesus or Anointed. This works with a space separated multi-word search.</p>
     <h3>Sharing:</h3>
     <p>The tool can save the current reference selection to the URL so that the user can share a passage via link. Or, the user can share a particular search result. See the 'Save as URL:' buttons.</p>
     <h3>Back and Forward:</h3>
