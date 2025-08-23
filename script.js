@@ -1880,7 +1880,7 @@ function searchVerses() {
     return;
   }
 
-  if (searchTerm.includes(" ")) {
+  if (searchTerm.includes(" ") || showContext) {
     const matches = multiWordSearch(searchTerm);
     
     if (matches.length === 0) {
@@ -1892,6 +1892,8 @@ function searchVerses() {
     return;
   }
 
+  // All below should now only return the word list. 
+
   const matches = [];
   let [inLookups, lookupInd] = lookInLookups(searchTerm);
 
@@ -1900,6 +1902,7 @@ function searchVerses() {
     inLookups = true;
   }
 
+  // Should combine these.
   if (inLookups || uniqueWords) {
     handleLookupMatches(searchTerm, matches);
   } else {
@@ -1978,7 +1981,7 @@ function handleLookupMatches(searchTerm, matches) {
   if (morphMatches.length === 0 || uniqueWords) return;
 
   forEachVerse((b, c, v, verseData) => {
-    if (showContext) {
+    if (showContext) { // NOTE: showContext should never call due to single words becing accepted into multiWordSearch. Remove this once fully tested.
       if (verseData.some(([ident]) => morphMatches.includes(ident))) {
         matches.push(...collectVerseMatches(b, c, v));
       }
@@ -2022,7 +2025,7 @@ function handleWordMatches(term, matches) {
   };
 
   forEachVerse((b, c, v, verseData) => {
-    if (showContext) {
+    if (showContext) { // NOTE: showContext should never call due to single words becing accepted into multiWordSearch. Remove this once fully tested.
       if (verseData.some(([ident, eng]) => wordMatches(eng, ident))) {
         matches.push(...collectVerseMatches(b, c, v));
       }
@@ -2036,21 +2039,22 @@ function handleWordMatches(term, matches) {
   });
 }
 
-function multiWordSearch(searchStr, options) {
+function multiWordSearchxxx(searchStr, options) { // Made redundant by updating what used to be multiWordSearchLookupDB.
   //elements.gapInput.value = 1; // force gap to 1 for multi-word search
   const exact = elements.exactMatch.checked;
   const normalized = elements.normalized.checked;
   const reverseInterlinear = elements.reverseInterlinear.checked;
   const ordered = elements.ordered.checked;       // new checkbox for ordered matching
   const adjacent = elements.adjacent.checked;     // new checkbox for adjacent matching
+  const showContext = elements.showContext.checked;
   const words = searchStr.trim().split(/\s+/);
-  if (words.length < 2) return [];
+  //if (words.length < 2) return [];
 
   const hasLookup = words.some(w => lookInLookups(w)[0]);
   const isGreek = words.every(w => /[α-ω]/i.test(w));
   const isLatin = words.every(w => !/[α-ω]/i.test(w));
 
-  if (hasLookup || !(isGreek || isLatin)) {
+  if (hasLookup || !(isGreek || isLatin) || showContext) {
     return multiWordSearchLookupDB(searchStr);
   }
 
@@ -2188,10 +2192,11 @@ function checkWordSequence(allWords, latinWords, isGreek, matchIdent = false) {
   const adjacent = elements.adjacent.checked;     // new checkbox for adjacent matching
   if (!latinWords || latinWords.length === 0) return false;
 
+  // ALERT: normalized words should be removed and look at allWords directly now.
   // Extract normalized words from allWords tokens
   const normalizedWords = allWords.map(({ wordData }) => {
     if (matchIdent) {
-      return wordData[0]; // keep full [ident, morph, strongs, root, rEng] or similar
+      return wordData; // keep full [ident, morph, strongs, root, rEng] or similar
     }
 
     const [ident, eng] = wordData;  // ident is first now
@@ -2219,15 +2224,13 @@ function checkWordSequence(allWords, latinWords, isGreek, matchIdent = false) {
   function tokenMatchesWord(tokenVal, searchWord) {
     if (!tokenVal || !searchWord) return false;
 
-    if (matchIdent) {
-      // searchWord is now either an array of idents or a single ident
-      if (Array.isArray(searchWord)) {
-        return searchWord.includes(tokenVal);
-      }
-      return tokenVal === searchWord;
+    // searchWord is now either an array of idents or a single latin word.
+    if (Array.isArray(searchWord)) {
+      return searchWord.includes(tokenVal[0]);
+    } else {
+      let lowerToken = tokenVal[1].toLowerCase();
+      return exact ? (lowerToken === searchWord) : lowerToken.includes(searchWord);
     }
-
-    return exact ? (tokenVal === searchWord) : tokenVal.includes(searchWord);
   }
 
   // Case 1: unordered, non-adjacent (just presence)
@@ -2312,11 +2315,12 @@ function checkWordSequence(allWords, latinWords, isGreek, matchIdent = false) {
   return false; // no match
 }
 
-function multiWordSearchLookupDB(searchStr, lookupInd) {
+function multiWordSearch(searchStr, lookupInd) {
   const exact = elements.exactMatch.checked;
   const reverseInterlinear = elements.reverseInterlinear.checked;
   const ordered = elements.ordered.checked;       // new checkbox for ordered matching
   const adjacent = elements.adjacent.checked;     // new checkbox for adjacent matching
+  const normalized = elements.normalized.checked;
   const terms = searchStr.trim().split(/\s+/);
 
   // Build possible matches for each input word
@@ -2329,6 +2333,11 @@ function multiWordSearchLookupDB(searchStr, lookupInd) {
     }
 
     const lowerTerm = typeof normTerm === "string" ? normTerm.toLowerCase() : normTerm;
+
+    // Case: Latin, not in lookups, and not normalized → raw term search
+    if (!/[α-ω]/i.test(term) && lookupInd === null && !normalized) {
+      return lowerTerm;
+    }
 
     return lookupdb
       .map((value, i) => {
@@ -2346,8 +2355,8 @@ function multiWordSearchLookupDB(searchStr, lookupInd) {
           }
         } else {
           // fallback: Greek vs Latin
-          const grk = value[0];
-          const rEng = value[4];
+          const grk = value?.[0] || "";
+          const rEng = value?.[4] || "";
           if (/[α-ω]/i.test(term)) {
             const grkNorm = toLatin(term);
             if (exact ? grkNorm === grk : grk.includes(grkNorm)) return i;
@@ -2365,16 +2374,24 @@ function multiWordSearchLookupDB(searchStr, lookupInd) {
   let results = []; 
   const claimedVerses = new Set();
 
+    // Find the shortest array in lookupTerms
+  const shortestLookup = lookupTerms.reduce((minArr, arr) => {
+    return arr.length < minArr.length ? arr : minArr;
+  }, lookupTerms[0]);
+
   // Scan through verses
   forEachVerse((b, c, v, verseWords) => {
-    // Find the shortest array in lookupTerms
-    const shortestLookup = lookupTerms.reduce((minArr, arr) => {
-      return arr.length < minArr.length ? arr : minArr;
-    }, lookupTerms[0]);
-    
     // Pre-check: does verse contain any of the words in the shortest array?
-    const containsWord = verseWords.some(([ident]) => {
-      return shortestLookup.includes(ident);
+    const containsWord = verseWords.some(([ident, wordEnglish]) => {
+      if (Array.isArray(shortestLookup)) {
+        // Standard: match by ident index
+        return shortestLookup.includes(ident);
+      } else if (typeof shortestLookup === "string") {
+        // Fallback: match by English text
+        const wordEng = (wordEnglish || "").toLowerCase();
+        return exact ? wordEng === shortestLookup : wordEng.includes(shortestLookup);
+      }
+      return false;
     });
 
     if (!containsWord) return;
@@ -2404,27 +2421,36 @@ function multiWordSearchLookupDB(searchStr, lookupInd) {
       });
     });
     
-    // Run checkWordSequence with lookupTerms instead of latinWords
-    const matchResult = checkWordSequence(allWords, lookupTerms, true /*isGreek*/, true /*search by ident*/);
-
-    if (matchResult) {
-      // Verify if any matched token is from the original verse (b,c,v)
-      const hasOriginalVerseWord = matchResult.some(idx => {
-        const token = allWords[idx];
-        return token.book === b && token.chapter === c && token.verse === v;
-      });
-
-      if (hasOriginalVerseWord) {
-        // Claim verses and add results
-        contextVerses.forEach(cv => {
-          claimedVerses.add(`${cv.book}-${cv.chapter}-${cv.verse}`);
-          results.push({
-            book: cv.book,
-            chapter: cv.chapter,
-            verse: cv.verse,
-            verseData: cv.verseData
-          });
+    if (terms.length === 1) {
+      // Single term search – no need for sequence checking
+      contextVerses.forEach(cv => {
+        claimedVerses.add(`${cv.book}-${cv.chapter}-${cv.verse}`);
+        results.push({
+          book: cv.book,
+          chapter: cv.chapter,
+          verse: cv.verse,
+          verseData: cv.verseData
         });
+      });
+    } else {
+      // Multi-term search – use sequence logic
+      const matchResult = checkWordSequence(allWords, lookupTerms, true, true);
+      if (matchResult) {
+        const hasOriginalVerseWord = matchResult.some(idx => {
+          const token = allWords[idx];
+          return token.book === b && token.chapter === c && token.verse === v;
+        });
+        if (hasOriginalVerseWord) {
+          contextVerses.forEach(cv => {
+            claimedVerses.add(`${cv.book}-${cv.chapter}-${cv.verse}`);
+            results.push({
+              book: cv.book,
+              chapter: cv.chapter,
+              verse: cv.verse,
+              verseData: cv.verseData
+            });
+          });
+        }
       }
     }
   });
