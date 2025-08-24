@@ -140,8 +140,8 @@ function toggleHelpPopup(pop, but) {
 
 async function getLastModified(url) {
   try {
-    const res = await fetch(url, { method: "HEAD", cache: "no-store" });
-    const lastMod = res.headers.get("Last-Modified");
+    const res = await fetch(url, { method: "GET", cache: "no-store" });
+    const lastMod = res.headers.get("last-modified");
     return lastMod ? new Date(lastMod) : null;
   } catch (e) {
     console.warn("Failed to fetch", url, e);
@@ -381,7 +381,7 @@ function setupEventListeners() {
   // For checkboxes that trigger onOptionsChange
   [
     "showGreek", "showEnglish", "showPcode", "showVerses",
-    "showStrongs", "showRoots", "newlineAfterVerse", "reverseInterlinear", "highlightSearch"
+    "showStrongs", "showRoots", "newlineAfterVerse", "reverseInterlinear", "highlightSearch", "searchSize"
   ].forEach(id => {
     elements[id].addEventListener("change", onOptionsChange);
   });
@@ -871,6 +871,27 @@ function render(customVerses = null) {
 
   // Check for custom input (either word list or verse list)
   if (customVerses && Array.isArray(customVerses)) {
+    if (searchState.boundaries.length > 1) {
+      const backBtn = document.createElement("button");
+      backBtn.id = "pageBackBtn";
+      backBtn.title = "Previous Search Results Page";
+      backBtn.textContent = "← Page";
+      backBtn.onclick = prevPage;
+
+      const forwardBtn = document.createElement("button");
+      forwardBtn.id = "pageForwardBtn";
+      forwardBtn.title = "Next Search Results Page";
+      forwardBtn.textContent = "Page →";
+      forwardBtn.onclick = nextPage;
+
+      const btnWrapper = document.createElement("div");
+      btnWrapper.style.width = "100%";           // Full width of the container
+      btnWrapper.style.display = "flex";         // Keep buttons side by side
+      btnWrapper.appendChild(backBtn);
+      btnWrapper.appendChild(forwardBtn);
+      container.appendChild(btnWrapper);
+    }
+
     const isWordList = Array.isArray(customVerses[0]) && customVerses[0].length === 3;
     const uniqueWords = document.getElementById('uniqueWords').checked;
 
@@ -1882,6 +1903,13 @@ function forEachVerse(callback) {
   }
 }
 
+let searchState = {
+  term: null,         // current search term
+  page: 0,            // current page index
+  pageSize: 10,      // max results per page
+  boundaries: [0]      // array of indexes where each page starts (0, x, y, …)
+};
+
 function searchVerses() {
   const searchTerm = elements.searchInput.value.trim();
   const exact = elements.exactMatch.checked;
@@ -1894,6 +1922,16 @@ function searchVerses() {
   if (!searchTerm) {
     container.innerHTML = '<p>Please enter a search term.</p>';
     return;
+  }
+
+  // Reset state if new term
+  if (searchTerm !== searchState.term || parseInt(elements.searchSize.value) !== searchState.pageSize) {
+    searchState = {
+      term: searchTerm,
+      page: 0,
+      pageSize: parseInt(elements.searchSize.value),
+      boundaries: [0]
+    };
   }
 
   // Reference search
@@ -1971,6 +2009,13 @@ function setReferenceRange({ b, c, v }) {
 
 function handleLookupMatches(searchTerm, matches) {
   const uniqueWords = elements.uniqueWords.checked;
+
+  // figure out paging bounds
+  const startIndex = searchState.boundaries[searchState.page];
+  const endIndex = startIndex + elements.searchSize.value * 10;
+
+  let count = 0; // how many matches total so far
+
   const morphMatches = [];
 
   for (let i = 0; i < lookupdb.length; i++) {
@@ -1980,41 +2025,87 @@ function handleLookupMatches(searchTerm, matches) {
     if (matchesLookup(searchTerm, value)) {
       const rEng = value[4] || "";
       if (uniqueWords) {
-        matches.push([i, rEng, ""]);
+        // unique words = just render dictionary hits
+        if (count >= startIndex && count < endIndex) {
+          matches.push([i, rEng, ""]);
+        }
+        count++;
       } else {
         morphMatches.push(i); // just store ident directly (the index)
       }
     }
   }
 
-  if (morphMatches.length === 0 || uniqueWords) return;
+  if (morphMatches.length === 0) return;
+
+  // if we're in uniqueWords mode we’re done
+  if (uniqueWords) {
+    // add boundary marker if we have more than one page
+    if (searchState.boundaries.length <= searchState.page + 1 && count > endIndex) {
+      searchState.boundaries.push(endIndex);
+    }
+    return;
+  }
 
   forEachVerse((b, c, v, verseData) => {
     verseData.forEach(([ident, eng]) => {
       if (morphMatches.includes(ident)) {
-        matches.push([ident, eng, `${bookAbb[b]} ${c + 1}:${v + 1}`]);
+        if (count >= startIndex && count < endIndex) {
+          matches.push([ident, eng, `${bookAbb[b]} ${c + 1}:${v + 1}`]);
+        }
+        count++;
       }
     });
   });
+
+  // add boundary marker if needed
+  if (searchState.boundaries.length <= searchState.page + 1 && count > endIndex) {
+    searchState.boundaries.push(endIndex);
+  }
 }
 
 function handleWordMatches(term, matches) {
   const exact = elements.exactMatch.checked;
   const searchTerm = term.toLowerCase();
 
-  const wordMatches = (eng, ident) => {
-    return exact
-      ? (eng || "").toLowerCase() === searchTerm
-      : (eng || "").toLowerCase().includes(searchTerm);
-  };
+  const startIndex = searchState.boundaries[searchState.page];
+  const endIndex = startIndex + elements.searchSize.value * 10;
+
+  let count = 0;
 
   forEachVerse((b, c, v, verseData) => {
     verseData.forEach(([ident, eng]) => {
-      if (wordMatches(eng, ident)) {
-        matches.push([ident, eng, `${bookAbb[b]} ${c + 1}:${v + 1}`]);
+      const word = (eng || "").toLowerCase();
+      const isMatch = exact ? word === searchTerm : word.includes(searchTerm);
+
+      if (isMatch) {
+        if (count >= startIndex && count < endIndex) {
+          matches.push([ident, eng, `${bookAbb[b]} ${c + 1}:${v + 1}`]);
+        }
+        count++;
       }
     });
   });
+
+  // update boundaries if we need a new page marker
+  if (searchState.boundaries.length <= searchState.page + 1 && count > endIndex) {
+    searchState.boundaries.push(endIndex);
+  }
+
+}
+
+function nextPage() {
+  if (searchState.page + 1 < searchState.boundaries.length) {
+    searchState.page++;
+    searchVerses();
+  }
+}
+
+function prevPage() {
+  if (searchState.page > 0) {
+    searchState.page--;
+    searchVerses();
+  }
 }
 
 function checkWordSequence(allWords, latinWords, isGreek, matchIdent = false) {
@@ -2131,6 +2222,19 @@ function multiWordSearch(searchStr, lookupInd) {
   const normalized = elements.normalized.checked;
   const terms = searchStr.trim().split(/\s+/);
 
+  // figure out paging bounds
+  const startIndex = searchState.boundaries[searchState.page];
+  const pageSize = parseInt(elements.searchSize.value, 10) || 0;
+  const gap      = parseInt(elements.gapInput.value, 10) || 1;
+
+  // If not a multiple of gap, use the next smaller multiple
+  const effectiveSize = (gap > 0 && pageSize % gap !== 0)
+    ? Math.floor(pageSize / gap) * gap
+    : pageSize;
+
+  const endIndex = startIndex + effectiveSize; // use this instead of startIndex + pageSize
+  let count = 0; // how many matches total so far
+
   // Build possible matches for each input word
   const lookupTerms = terms.map(term => {
     let normTerm = term;
@@ -2207,12 +2311,15 @@ function multiWordSearch(searchStr, lookupInd) {
       // Single term search – no need for sequence checking
       contextVerses.forEach(cv => {
         claimedVerses.add(`${cv.book}-${cv.chapter}-${cv.verse}`);
-        results.push({
-          book: cv.book,
-          chapter: cv.chapter,
-          verse: cv.verse,
-          verseData: cv.verseData
-        });
+        if (count >= startIndex && count < endIndex) {
+          results.push({
+            book: cv.book,
+            chapter: cv.chapter,
+            verse: cv.verse,
+            verseData: cv.verseData
+          });
+        }
+        count++
       });
     } else {
       // Multi-term search – use sequence logic
@@ -2225,17 +2332,27 @@ function multiWordSearch(searchStr, lookupInd) {
         if (hasOriginalVerseWord) {
           contextVerses.forEach(cv => {
             claimedVerses.add(`${cv.book}-${cv.chapter}-${cv.verse}`);
-            results.push({
-              book: cv.book,
-              chapter: cv.chapter,
-              verse: cv.verse,
-              verseData: cv.verseData
-            });
+            if (count >= startIndex && count < endIndex) {
+              results.push({
+                book: cv.book,
+                chapter: cv.chapter,
+                verse: cv.verse,
+                verseData: cv.verseData
+              });
+            }
+            count++
           });
         }
       }
     }
   });
+
+  // add boundary marker if needed
+  console.log(endIndex)
+  if (searchState.boundaries.length <= searchState.page + 1 && count > endIndex) {
+    console.log(endIndex)
+    searchState.boundaries.push(endIndex);
+  }
 
   return results;
 }

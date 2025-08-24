@@ -63,6 +63,8 @@
       <label><input type="checkbox" id="newlineAfterVerse" data-id> New line after each verse</label><br>
       <label title="When checked, show the GHT English word order, otherwise use the word order as used in the original Greek text."><input type="checkbox" id="reverseInterlinear" checked data-id> Reverse Interlinear</label><br>
       <label title="When checked, highlight any word that matches the search conditions."><input type="checkbox" id="highlightSearch" checked data-id> Highlight Search Results</label><br>
+      <label title="Select how many search results to get at a time." for="searchSize">Max Results:</label>
+      <input id="searchSize" type="number" value="100" min="1" step="1" style="width: 45px;" data-id><br>
       <button onclick="saveSettings()">Save All Settings</button>
       <button onclick="resetSettings()">Reset All Settings</button>
     </div>
@@ -125,6 +127,7 @@
       <a href="http://ghukek.com/ght.html" style="font-size: 0.6em; margin-left: 0.5em;">(More info and contact)</a>
     </h2>
     <h3>Newest feature:</h3>
+    <p>23 Aug: Added pagination for large searches to reduce render time.</p>
     <p>22 Aug: Added ability to combine attribute search by using + or | symbols.</p>
     <p>22 Aug: Added highlight searched words. Turn this off in display settings.</p>
     <h3>Selecting passages by reference:</h3>
@@ -141,6 +144,7 @@
       <li>Roots: shows my personal categorization of related words by showing the primitive roots from which they are constructed. Greek has many compound words. This is meant to be a more comprehesive set of connections than the Strong's concordance numbers.</li>
     </ul>
     <p>The 'Display Options' allow you to adjust how to show the selected passages. You can also save or reset your settings here.</p>
+    <p>The 'Max Results' selection sets how many verses or entries to display at a time when making a large search. The value is multiplied by 10 when searching for words without context.</p>
     <h3>Searching:</h3>
     <p>To search, type text into the search bar and click 'Search'. You may also click on any clickable string in the body of the text or in the popups to automatically search that string. Use the 'Greek Keyboard' if you do not have a Greek keyboard set up in your operating system and want to type in Greek. When 'Greek Keyboard' is checked, the search bar will automatically convert your input to Greek characters to allow you to search for Greek words. Click the '?' button to see an image of a Greek keyboard if you don't know how to type in Greek. You may search for multiple words at a time.</p>
     <p>The 'Search Options' allow you to customize your search parameters. The explanation for these are as follows:</p>
