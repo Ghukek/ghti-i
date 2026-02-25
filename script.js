@@ -3285,8 +3285,10 @@ function tryParseReference(refString) {
     const chapterVerse = parts[1].split(':');
     c = parseInt(chapterVerse[0], 10) - 1 || 0;
     v = parseInt(chapterVerse[1], 10) - 1 || 0;
+    return { b, c, v };
+  } else {
+    return null; // No chapter/verse specified
   }
-  return { b, c, v };
 }
 
 // Function to check if term is a possible match
