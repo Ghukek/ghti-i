@@ -512,6 +512,9 @@ function loadState(panelID, increment, fromChangeTranslation = false) {
       if (increment !== 0) showToast("No more search histories to load in this direction.\n Use left navigation buttons to navigate reference histories when panels are linked.", 3000);
       restoring = false;
       historyIndexes[stackID] = index;
+      if (originalPanel && targetPanel !== originalPanel) {
+        activate(originalPanel);
+      }
       return;
     }
   }
@@ -522,6 +525,12 @@ function loadState(panelID, increment, fromChangeTranslation = false) {
 
     if (el.type === "checkbox") el.checked = state[id];
     else {
+      if (panelID !== 0 && elements.linkPanels.checked) {
+        if (id === "bookStart" || id === "chapterStart" || id === "verseStart" || id === "bookEnd" || id === "chapterEnd" || id === "verseEnd" || id === "gapInput") {
+          // skip loading reference histories into non-reference panel when panels are linked.
+          return;
+        }
+      }
       if (el.id === "chapterStart") populateChapters(state.bookStart, el);
       if (el.id === "chapterEnd") populateChapters(state.bookEnd, el);
       if (el.id === "verseStart") populateVerses(state.bookStart, state.chapterStart, el);
@@ -626,6 +635,7 @@ document.addEventListener("keydown", (e) => {
 function updateHistoryButtons(panelID) {
   if (debugMode) console.log("updateHistoryButtons()")
   buttonID = panelID === 0 ? 0 : 1;
+  panelID = panelID === 1 && select.value !== "none" ? 2 : panelID;
   const index = historyIndexes[panelID];
   const stack = historyStacks[panelID];
 
@@ -2855,7 +2865,8 @@ function showPopupTouchEnd(e) {
     if (isVisible) {
       popup.style.display = "none";
     } else {
-      currentPopup = e.target;
+      if (currentPopup && currentPopup === e.target.closest("span.word")) return; // Already active on this element, visible or not.
+      currentPopup = e.target.closest("span.word") || null;
       popupActivatedAt = Date.now();  // Track when it was shown
       showPopup(e);  // You must make sure showPopup sets style.display = "block"
     }
