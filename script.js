@@ -1427,6 +1427,8 @@ function applyUrlSearch() {
   elements.highlightSearch.checked = params.get("h") !== "0";
 
   if (params.has("g")) elements.gapInput.value = params.get("g");
+  
+  autoGapInputWidth(elements.gapInput);
 
   currentRender = "search";
 }
@@ -1767,9 +1769,9 @@ function insertFwdBack(container) {
 
 let centerFromSearch = false;
 let currentRender = "reference"; // used to track current rendering mode, changed in render()
-function render(customVerses = null, inDouble = false) {
+function render(customVerses = null, inDouble = false, isRef = false) {
   if (debugMode) console.log("render()");
-  if (customVerses && Array.isArray(customVerses)) {
+  if ((customVerses && Array.isArray(customVerses)) && !isRef) {
     currentRender = "search";
   } else {
     currentRender = "reference";
@@ -1778,9 +1780,9 @@ function render(customVerses = null, inDouble = false) {
     let activePanel = getActivePanelId();
     let inactivePanel = activePanel === 1 ? 0 : 1;
     activate(outputContainer.querySelector(`[data-panel-i-d="${inactivePanel}"]`), elements.gapInput.value);
-    render(customVerses, true);
+    render(customVerses, true, true);
     activate(outputContainer.querySelector(`[data-panel-i-d="${activePanel}"]`), elements.gapInput.value);
-    render(customVerses, true);
+    render(customVerses, true, true);
     if (debugMode) console.log("end render()");
     return
   }
@@ -1986,44 +1988,85 @@ function render(customVerses = null, inDouble = false) {
       if (searchState[currentPanelId].boundaries.length > 1) {
         insertFwdBack(container)
       }
-      if (debugMode) console.log("end render()");
-      return;
+    } else {
+      // Default verse-style rendering
+      if (currentRender === "search")showVerses = true;
+      customVerses.forEach(({ book, chapter, verse, verseData }) => {
+        ({ passUnderscore, countContext, verseEl } = renderSingleVerse(
+          container,
+          book,
+          chapter,
+          verse,
+          verseData,
+          {
+            showVerses,
+            reverseInterlinear,
+            passUnderscore,
+            countContext,
+            contextBool
+          },
+          verseEl,
+          isFirstPanel
+        ));
+      });
+      if (verseEl) container.appendChild(verseEl);
+      if (searchState[currentPanelId].boundaries.length > 1 && currentRender === "search") {
+        insertFwdBack(container)
+      }
     }
-
-    // Default verse-style rendering
-    showVerses = true;
-    customVerses.forEach(({ book, chapter, verse, verseData }) => {
-      ({ passUnderscore, countContext, verseEl } = renderSingleVerse(
-        container,
-        book,
-        chapter,
-        verse,
-        verseData,
-        {
-          showVerses,
-          reverseInterlinear,
-          passUnderscore,
-          countContext,
-          contextBool
-        },
-        verseEl,
-        isFirstPanel
-      ));
-    });
-    if (searchState[currentPanelId].boundaries.length > 1) {
-      insertFwdBack(container)
-    }
-    if (debugMode) console.log("end render()");
-    return;
+  } else {
+    let refVerses = getRefResults();
+    render(refVerses, false, true);
+    return
   }
 
-  // Otherwise, existing logic with user-selected start/end refs
-  const bookStart = parseInt(elements.bookStart.value);
-  const chapterStart = parseInt(elements.chapterStart.value);
-  const verseStart = parseInt(elements.verseStart.value);
-  const bookEnd = parseInt(elements.bookEnd.value);
-  const chapterEnd = parseInt(elements.chapterEnd.value);
-  const verseEnd = parseInt(elements.verseEnd.value);
+  if (centerFromSearch) {
+    container.scrollTop = (container.scrollHeight - container.clientHeight) / 2;
+    centerFromSearch = false;
+  }
+
+  requestAnimationFrame(() => fixOverwideEng(container));
+  
+  if (debugMode) console.log("end render()");
+  return;
+}
+
+function getRefResults(refData = null) {
+
+  let bookStart, chapterStart, verseStart;
+  let bookEnd, chapterEnd, verseEnd;
+
+  // CASE 1 — reference provided programmatically
+  if (refData && !Array.isArray(refData)) {
+
+    // single verse
+    if (!refData.start) {
+      bookStart = bookEnd = refData.b;
+      chapterStart = chapterEnd = refData.c;
+      verseStart = verseEnd = refData.v;
+    }
+
+    // range
+    else {
+      bookStart = refData.start.b;
+      chapterStart = refData.start.c;
+      verseStart = refData.start.v;
+
+      bookEnd = refData.end.b;
+      chapterEnd = refData.end.c;
+      verseEnd = refData.end.v;
+    }
+  }
+
+  // CASE 2 — fallback to UI values
+  else {
+    bookStart = parseInt(elements.bookStart.value);
+    chapterStart = parseInt(elements.chapterStart.value);
+    verseStart = parseInt(elements.verseStart.value);
+    bookEnd = parseInt(elements.bookEnd.value);
+    chapterEnd = parseInt(elements.chapterEnd.value);
+    verseEnd = parseInt(elements.verseEnd.value);
+  }
 
   contextBool = false;
 
@@ -2034,10 +2077,14 @@ function render(customVerses = null, inDouble = false) {
   const useBaseData = (select.value === "none" || isFirstPanel) ? true : false;
   let currData = useBaseData ? baseData : compData;
 
+  const results = [];
+
   for (let b = bookStart; b <= bookEnd; b++) {
     if (!currData[b]) continue;
     const cStart = (b === bookStart) ? chapterStart : 0;
     const cEnd = (b === bookEnd) ? chapterEnd : currData[b].length;
+
+    if (b > bookStart) results.push({ book: -1, chapter: -1, verse: -1, verseData: "bar"});
 
     for (let c = cStart; c <= cEnd; c++) {
       if (!currData[b][c]) continue;
@@ -2048,46 +2095,27 @@ function render(customVerses = null, inDouble = false) {
         const verseData = currData[b][c][v];
         if (!verseData) continue;
 
-        ({ passUnderscore, countContext, verseEl } = renderSingleVerse(
-          container, b, c, v, 
-          verseData, 
-          {
-          showVerses,
-          reverseInterlinear,
-          passUnderscore,
-          countContext,
-          contextBool
-          },
-          verseEl,
-          isFirstPanel,
-        ));
+        results.push({ book: b, chapter: c, verse: v, verseData: currData[b][c][v] }) 
 
         count++
         if (count >= parseInt(elements.searchSize.value, 10)) {
-          container.append(verseEl)
-          container.innerHTML += `<p><b>${elements.searchSize.value} verses displayed. Limit reached. Increase this limit in 'Display Settings' if you want to render more.</b></p>`;
           elements.gapInput.value = count;
+          autoGapInputWidth(elements.gapInput);
           elements.bookEnd.value = b;
           populateChapters(b, elements.chapterEnd);
           elements.chapterEnd.value = c;
           populateVerses(b, c, elements.verseEnd);
           elements.verseEnd.value = v;
+          results.push({ book: -1, chapter: -1, verse: -1, verseData: "too many" })
+          render(results, false, true);
           return
         }
       }
     }
   }
-  container.append(verseEl)
   elements.gapInput.value = count;
-  if (centerFromSearch) {
-    container.scrollTop = (container.scrollHeight - container.clientHeight) / 2;
-    centerFromSearch = false;
-  }
-
-  requestAnimationFrame(() => fixOverwideEng(container));
-  
-  if (debugMode) console.log("end render()");
-  return;
+  autoGapInputWidth(elements.gapInput);
+  return results;
 }
 
 function fixOverwideEng(container) {
@@ -2189,18 +2217,27 @@ function renderSingleVerse(container, book, chapter, verse, verseData, options, 
   let localPassUnderscore = passUnderscore;
   let localCountContext = countContext;
 
-  if (chapter === 0 && verse === 0 && verseElin) {
+  if (book === -1 && verseData === "bar") {
     container.appendChild(verseElin);
     verseElin = null;
 
     const separator = document.createElement('hr');
     separator.classList.add('search-separator');
     container.appendChild(separator);
-
     localCountContext = 0;
-  } 
+    return {
+      passUnderscore: localPassUnderscore, countContext: localCountContext, verseElin
+    };
+  } else if (book === -1 && verseData === "too many") {
+    container.appendChild(verseElin);
+    verseElin = null;
 
-  let verseRange = parseInt(elements.gapInput.value, 10);
+    container.innerHTML += `<p><b>${elements.searchSize.value} verses displayed. Limit reached. Increase this limit in 'Display Settings' if you want to render more.</b></p>`;
+    localCountContext = 0;
+    return {
+      passUnderscore: localPassUnderscore, countContext: localCountContext, verseElin
+    };
+  }
 
   let verseEl = null;
   if (verseElin) {
@@ -2577,27 +2614,6 @@ function renderSingleVerse(container, book, chapter, verse, verseData, options, 
   if (newlineAfterVerse) {
     container.appendChild(verseEl);
     verseEl = null;
-
-    if (contextBool) {
-      if (localCountContext === verseRange) {
-        const separator = document.createElement('hr');
-        separator.classList.add('search-separator');
-        container.appendChild(separator);
-
-        localCountContext = 0;
-      }
-    } else {
-      localCountContext = 0;
-    }
-
-  } else if (contextBool && localCountContext === verseRange) {
-    container.appendChild(verseEl);
-    verseEl = null;
-
-    const separator = document.createElement('hr');
-    separator.classList.add('search-separator');
-    container.appendChild(separator);
-
     localCountContext = 0;
   } 
 
@@ -3281,25 +3297,50 @@ function matchMorphTag(pattern, tag) {
   return true;
 }
 
-// Helper: parse a reference string into book/chapter/verse indices
+// Helper: parse reference strings into book/chapter/verse indices
 function tryParseReference(refString) {
   if (debugMode) console.log("tryParseReference()");
-  const parts = refString.trim().split(/\s+/);
-  if (parts.length === 0) return null;
+  if (!refString?.trim()) return null;
 
-  const bookName = parts[0];
-  const b = bookAbb.findIndex(bk => bk.toLowerCase() === bookName.toLowerCase());
-  if (b === -1) return null;
+  const refs = refString.split(",").map(r => r.trim()).filter(Boolean);
+  const results = [];
 
-  let c = 0, v = 0;
-  if (parts.length > 1) {
-    const chapterVerse = parts[1].split(':');
-    c = parseInt(chapterVerse[0], 10) - 1 || 0;
-    v = parseInt(chapterVerse[1], 10) - 1 || 0;
-    return { b, c, v };
-  } else {
-    return null; // No chapter/verse specified
+  for (const ref of refs) {
+    const match = ref.match(/^(\S+)\s+(\d+):(\d+)(?:-(?:(\d+):)?(\d+))?$/);
+    if (!match) return null;
+
+    const [, bookName, c1, v1, c2, v2] = match;
+
+    const b = bookAbb.findIndex(bk => bk.toLowerCase() === bookName.toLowerCase());
+    if (b === -1) return null;
+
+    const start = {
+      b,
+      c: parseInt(c1, 10) - 1,
+      v: parseInt(v1, 10) - 1
+    };
+
+    // no range
+    if (!v2) {
+      results.push(start);
+      continue;
+    }
+
+    const end = {
+      b,
+      c: (c2 ? parseInt(c2, 10) : parseInt(c1, 10)) - 1,
+      v: parseInt(v2, 10) - 1
+    };
+
+    results.push({ start, end });
   }
+
+  // preserve original behavior if single simple ref
+  if (results.length === 1 && !results[0].start) {
+    return results[0];
+  }
+
+  return results;
 }
 
 // Function to check if term is a possible match
@@ -3425,16 +3466,37 @@ function searchChange() {
 
 function refSearch(searchTerm) {
   if (debugMode) console.log("refSearch()");
-    // Reference search
+
   const ref = tryParseReference(searchTerm);
-  if (ref) {
-    if (elements.centerRange.checked) centerFromSearch = true;
-    setReferenceRange(ref);
-    updateDisplay();
-    render();
+  if (!ref) return false;
+
+  // MULTI reference or range
+  if (Array.isArray(ref)) {
+    const allResults = [];
+
+    for (const r of ref) {
+      const result = getRefResults(r);
+      if (Array.isArray(result)) {
+        allResults.push(...result);
+      } else if (result) {
+        allResults.push(result);
+      }
+      allResults.push({ book: -1, chapter: -1, verse: -1, verseData: "bar"});
+    }
+
+    allResults.pop();
+
+    render(allResults);
+
     return true;
   }
-  return false;
+
+  // SINGLE verse (original behavior unchanged)
+  if (elements.centerRange.checked) centerFromSearch = true;
+  setReferenceRange(ref);
+  updateDisplay();
+  render();
+  return true;
 }
 
 function searchVerses() {
@@ -4011,6 +4073,7 @@ function multiWordSearch(searchStr, lookupInd) {
         }
         count++
       });
+      results.push({ book: -1, chapter: -1, verse: -1, verseData: "bar"});
     } else {
       // Multi-term search – use sequence logic
       const matchResult = checkWordSequence(allWords, lookupTerms, true, true);
@@ -4032,6 +4095,7 @@ function multiWordSearch(searchStr, lookupInd) {
             }
             count++
           });
+          results.push({ book: -1, chapter: -1, verse: -1, verseData: "bar"});
         }
       }
     }
@@ -4041,6 +4105,8 @@ function multiWordSearch(searchStr, lookupInd) {
   if (searchState[currentPanelId].boundaries.length <= searchState[currentPanelId].page + 1 && count > endIndex) {
     searchState[currentPanelId].boundaries.push(endIndex);
   }
+
+  results.pop();
 
   return results;
 }
@@ -4650,6 +4716,7 @@ function loadPanelState(panelID) {
   elements.verseEnd.value = state.verseEnd;
   elements.searchInput.value = state.searchInput;
   elements.gapInput.value = state.gapInput;
+  autoGapInputWidth(elements.gapInput);
   currentRender = state.currentRender;
   updateDisplay();
 }
@@ -4889,7 +4956,10 @@ function activate(panel, fromRender = false) {
 
   loadSettings(false, false);
   if (!fromRender) loadPanelState(currentPanelId);
-  else elements.gapInput.value = fromRender; // gapInput is saved in settings and thus overridden when render() activates panels for linking purposes.
+  else {
+    elements.gapInput.value = fromRender; // gapInput is saved in settings and thus overridden when render() activates panels for linking purposes.
+    autoGapInputWidth(elements.gapInput);
+  }
 }
 
 function setMode(changed = null) {
