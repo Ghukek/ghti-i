@@ -4329,7 +4329,7 @@ function copyText(mode) {
   let texts = [];
 
   // include <hr> in traversal
-  output.querySelectorAll(".verse-label, .word .grk, .word .eng, hr.search-separator")
+  output.querySelectorAll(".verse-label, .word .grk, .word .eng, hr.search-separator, .word .compEng, .word .BSB, .word .MSB")
     .forEach(node => {
 
       if (node.tagName === "HR") {
@@ -4343,12 +4343,20 @@ function copyText(mode) {
       else if (mode === "grk" && node.classList.contains("grk")) {
         texts.push(node.textContent.trim());
       }
-      else if (mode === "eng" && node.classList.contains("eng")) {
+      else if (mode === "eng" && (node.classList.contains("eng") || node.classList.contains("compEng"))) {
         texts.push(node.textContent.trim());
+      }
+      else if (mode === "eng" && node.classList.contains("MSB")) {
+        texts.push("~" + node.textContent.trim() + "~");
+      }
+      else if (mode === "eng" && node.classList.contains("BSB")) {
+        texts.push("*" + node.textContent.trim() + "*");
       }
     });
 
-  let result = texts.join(" ");
+  let result = texts.join(" ")
+    .replace(/~\s+~/g, " ")
+    .replace(/\*\s+\*/g, " ");
 
   // clean spacing around line breaks + collapse spaces
   result = result
