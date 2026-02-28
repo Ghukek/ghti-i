@@ -294,6 +294,7 @@ select {
 
 #navHeader button {
   padding: 2px 4px;
+  font-size: 12px;
 }
 
 .word-list-grid {
@@ -470,20 +471,28 @@ label:has(input[type="checkbox"]) {
   cursor: pointer;
 }
 
-button {
+button, .panelToggle {
   cursor: pointer;
   background-color: #eae4d4;   /* normal */
   color: #000000;              /* earthy text color */
   border: 1px solid #d0c6b4;   /* subtle border */
   border-radius: 3px;
   transition: background-color 0.2s ease;
+  font-family: var(--font-family);
+  font-size: 14px;
+  padding: 2px 4px;
+}
+
+#horizPanel:checked + label,
+#vertPanel:checked + label {
+  background: var(--even-darker-tan);
 }
 
 #greyFwdBackBtn {
   background-color: var(--lightest-tan);
 }
 
-button:hover {
+button:hover, .panelToggle:hover {
   background-color: #ddd6c4;   /* darker on hover */
 }
 

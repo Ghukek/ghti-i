@@ -32,9 +32,9 @@
         <button title="Show help about using the page" id="helpButton" onclick="toggleHelpPopup('helpPopup','helpButton')">Help</button>
         <button title="Abbreviated info from source introduction." id="readmeButton" onclick="toggleHelpPopup('readmePopup','readmeButton')">Read Me</button>
         <a href="https://www.wiebefamily.org/GHT.htm" target="_blank" rel="noopener noreferrer">GHT Source</a> <!-- &nbsp;(<b id="percentage">0%</b>&nbsp;translated) -->
-        <br>Data last updated: <b style="color: #bb0000"></i><i id="data_last_updated"></i></b><i> (your local time)</i>
-        <br>Tool last updated: <b style="color: #bb0000"></i><i id="tool_last_updated"></i></b><i> (your local time)</i>
-        <b id="alpha" style="display:none; color:#bb0000">ALERT: This is the development version and may be unstable! <a href="ght-i.html">Go to stable version.</a></b>
+        <br>Data last updated: <b style="color: rgb(124, 0, 0)"></i><i id="data_last_updated"></i></b><i> (your local time)</i>
+        <br>Tool last updated: <b style="color: rgb(124, 0, 0)"></i><i id="tool_last_updated"></i></b><i> (your local time)</i>
+        <b id="alpha" style="display:none; color:#ff520e">ALERT: This development version may be unstable! <a href="ght-i.html">Go to stable version.</a></b>
       </div>
       <div class="collapse-bar-horizontal" onclick="toggleHeader(event)" title="Collapse / Expand header"></div>
     </div>
@@ -139,8 +139,11 @@
     <button class="buttonInDropdown" onclick="selectPaul()" hidden>Paul's Letters</button>
   </div>
   <div id="panelPopup" class="popup menu-popup">
-    <label title="Adds a second panel to the right of the first."><input type="checkbox" id="horizPanel" data-id global-setting onclick="setMode('horiz')" autocomplete="off"> 2nd Panel Right</label><br>
-    <label title="Sets a second panel below the first."><input type="checkbox" id="vertPanel" data-id global-setting onclick="setMode('vert')" autocomplete="off"> 2nd Panel Below</label><br>
+    2nd Panel:
+    <input type="checkbox" id="horizPanel" hidden data-id global-setting onclick="setMode('horiz')" autocomplete="off">
+    <label for="horizPanel" class="panelToggle" title="Adds a second panel to the right of the first."> Right</label>
+    <input type="checkbox" id="vertPanel" hidden data-id global-setting onclick="setMode('vert')" autocomplete="off">
+    <label for="vertPanel" class="panelToggle" title="Sets a second panel below the first."> Below</label><br>
     <label title="Extend the height of the panels to 90% of the screen."><input type="checkbox" id="smallScreen" data-id global-setting onclick="setMode()" autocomplete="off"> Taller Panels</label><br>
     <label title="Link both panels. Useful for side-by-side reading."><input type="checkbox" id="linkPanels" data-id global-setting onclick="render()" autocomplete="off" data-id global-setting> Parallel Mode</label><br>
     <label title="Link panel scrolling."><input type="checkbox" id="linkScroll" data-id global-setting autocomplete="off" style="margin-left: 20px"> Scroll Link</label><br>
@@ -267,12 +270,12 @@
   </div>
   <div id="navHeader">
     <!-- <button onclick="updateBCV(-3)">◀Book</button> -->
-    <button onclick="updateBCV(-2)" title="Navigate back one chapter. Use shift + left arrow.">◀Chapter</button>
-    <button onclick="updateBCV(-4)" title="Navigate back one page. Use up arrow.">◀Page</button>
-    <button onclick="updateBCV(-1)" title="Navigate back one verse. Use left arrow.">◀Verse</button>
-    <button onclick="updateBCV(1)" title="Navigate back one verse. Use right arrow.">Verse▶</button>
-    <button onclick="updateBCV(4)" title="Navigate back one page. Use down arrow.">Page▶</button>
-    <button onclick="updateBCV(2)" title="Navigate forward one chapter. Use shift + right arrow.">Chapter▶</button>
+    <button onclick="updateBCV(-2)" title="Navigate back one chapter. Use shift + left arrow.">◀ Ch.</button>
+    <button onclick="updateBCV(-4)" title="Navigate back one page. Use up arrow.">◀ Pg.</button>
+    <button onclick="updateBCV(-1)" title="Navigate back one verse. Use left arrow.">◀ Vs.</button>
+    <button onclick="updateBCV(1)" title="Navigate back one verse. Use right arrow.">Vs. ▶</button>
+    <button onclick="updateBCV(4)" title="Navigate back one page. Use down arrow.">Pg. ▶</button>
+    <button onclick="updateBCV(2)" title="Navigate forward one chapter. Use shift + right arrow.">Ch. ▶</button>
     <!-- <button onclick="updateBCV(3)">Book▶</button> -->
   </div>
   <!-- History Buttons -->
