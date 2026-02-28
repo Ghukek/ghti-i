@@ -131,7 +131,7 @@
     <!-- <button class="buttonInDropdown" onclick="saveSettings('save-id')">Save Search Settings</button><br> -->
     <!-- <button class="buttonInDropdown" onclick="resetSettings('save-id', true)">Reset Search Settings</button> -->
     <label for="bookFilter" hidden>Limit to Books:</label>
-    <select id="bookFilter" multiple size="5" data-id save-id autocomplete="off" hidden>
+    <select id="bookFilter" multiple size="5" autocomplete="off" hidden>
       <option value="all" selected>All Books</option>
     </select><br hidden>
     <button class="buttonInDropdown" onclick="selectAllBooks()" hidden>Select All</button>
@@ -220,7 +220,7 @@
   <span class="head-group-wrapper" id="headWrapper2">
     <span class="head-group2 keep-visible">
       <input type="text" id="searchInput" placeholder="Enter search term" data-id save-id autocomplete="off"/>
-      <button id="searchBtn" data-id>Search</button>
+      <button id="searchBtn">Search</button>
     </span>
     <span class="head-group2">
       <label title="Convert keyboard input to Greek letters"><input type="checkbox" id="convertToGreek" data-id save-id autocomplete="off"> Greek Keyboard</label>

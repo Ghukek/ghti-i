@@ -785,13 +785,16 @@ function setupEventListeners() {
 
   // For checkboxes or inputs that trigger searchVerses
   [
-    "searchBtn", "centerRange", "showContext", "exactMatch",
+    "centerRange", "showContext", "exactMatch",
     "uniqueWords", "ordered", "adjacent", "normalized","expandMorph"
   ].forEach(id => {
     const el = elements[id];
-    const event = id === "searchBtn" ? "click" : "change";
-    el.addEventListener(event, searchChange);
+    el.addEventListener("change", searchChange);
   });
+
+  // Button (not in elements)
+  document.getElementById("searchBtn")
+    .addEventListener("click", searchChange);
 
   elements.searchInput.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') {
@@ -2016,8 +2019,12 @@ function render(customVerses = null, inDouble = false, isRef = false) {
       }
     }
   } else {
-    let refVerses = getRefResults();
-    render(refVerses, inDouble, true);
+    let { results: refVerses, count: gap } = getRefResults();
+    if (refVerses) {
+      render(refVerses, inDouble, true);
+    }
+    elements.gapInput.value = gap;
+    autoGapInputWidth(elements.gapInput);
     return
   }
 
@@ -2033,6 +2040,7 @@ function render(customVerses = null, inDouble = false, isRef = false) {
 }
 
 function getRefResults(refData = null) {
+  if (debugMode) console.log("getRefResults()");
 
   let bookStart, chapterStart, verseStart;
   let bookEnd, chapterEnd, verseEnd;
@@ -2109,15 +2117,12 @@ function getRefResults(refData = null) {
           populateVerses(b, c, elements.verseEnd);
           elements.verseEnd.value = v;
           results.push({ book: -1, chapter: -1, verse: -1, verseData: "too many" })
-          render(results, false, true);
-          return
+          return { results, count }
         }
       }
     }
   }
-  elements.gapInput.value = count;
-  autoGapInputWidth(elements.gapInput);
-  return results;
+  return { results, count };
 }
 
 function fixOverwideEng(container) {
@@ -3474,22 +3479,36 @@ function refSearch(searchTerm) {
 
   // MULTI reference or range
   if (Array.isArray(ref)) {
+    const limit = Number(elements.searchSize.value);
     const allResults = [];
+    let count = 0;
+    let truncated = false;
 
     for (const r of ref) {
-      const result = getRefResults(r);
-      if (Array.isArray(result)) {
-        allResults.push(...result);
-      } else if (result) {
-        allResults.push(result);
+      const { results: result, count: gap } = getRefResults(r);
+      if (!result) continue;
+
+      for (const obj of result) {
+        if (count >= limit) {
+          truncated = true;
+          break;
+        }
+        allResults.push(obj);
+        count++;
       }
-      allResults.push({ book: -1, chapter: -1, verse: -1, verseData: "bar"});
+
+      if (truncated) break;
+
+      // separator between ranges
+      allResults.push({ book: -1, chapter: -1, verse: -1, verseData: "bar" });
     }
 
-    allResults.pop();
-
+    if (truncated) {
+      allResults.push({ book: -1, chapter: -1, verse: -1, verseData: "too many" });
+    } else {
+      allResults.pop(); // remove last separator if not truncated
+    }
     render(allResults);
-
     return true;
   }
 
