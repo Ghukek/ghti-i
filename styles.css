@@ -45,7 +45,7 @@
 }
 
 body { 
-  font-family: var(--font-family);; 
+  font-family: var(--font-family);
   margin: 1rem;
   background-color: var(--lightest-tan); /* light off-white */
   margin-bottom: 28px;
@@ -159,6 +159,18 @@ body {
   cursor: pointer;
 }
 
+.BSB { 
+  font-size: var(--font-size-english);
+  color: rgb(0, 0, 220); 
+  cursor: pointer;
+}
+
+.MSB { 
+  font-size: var(--font-size-english);
+  color: rgb(180, 0, 0); 
+  cursor: pointer;
+}
+
 .compEng { 
   font-size: var(--font-size-english);
   color: #1b0e07;
@@ -217,7 +229,7 @@ body {
 }
 
 /* Default hover */
-.roots:hover, .pcode:hover, .eng:hover, .compEng:hover, .compEngR:hover, .compEngL:hover, .grk:hover, .col:hover, .verse-label:hover, #toggleGreekHelp:hover {
+.roots:hover, .pcode:hover, .eng:hover, .BSB:hover, .MSB:hover, .compEng:hover, .compEngR:hover, .compEngL:hover, .grk:hover, .col:hover, .verse-label:hover, #toggleGreekHelp:hover {
   background-color: var(--highlight-overlay);
   box-shadow: 0 0 6px 2px var(--highlight-overlay);
   border-radius: 5px; /* optional, soft corners */
@@ -758,7 +770,7 @@ select {
   flex-grow:1;
   flex-basis:0;
   overflow: auto;
-  height: calc(var(--panel-height) - 4px);
+  height: auto;
   /* from #output */
   display: flex;
   align-items: flex-start;;

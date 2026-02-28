@@ -2176,9 +2176,14 @@ function fixOverwideEng(container) {
 
 let otherPanel = false;
 
-function createClickableSpan(className, text, wordEl, altsearch=null) {
+function createClickableSpan(className, text, wordEl, altsearch=null, berean=null) {
   if (debugModeExtra) console.log("createClickableSpan()"); // Excessive calls
   const span = document.createElement("span");
+  if (berean === 0) {
+    className = "MSB";
+  } else if (berean === 1) {
+    className = "BSB";
+  }
   span.className = className;
   if (elements.customFormat.checked && className === "eng") {
     span.innerHTML = text;
@@ -2295,7 +2300,7 @@ function renderSingleVerse(container, book, chapter, verse, verseData, options, 
   // word rendering logic here, same as before...
 
   for (let i = 0; i < verseWords.length; i++) {
-    const [ident, eng, num] = verseWords[i]; //Refactor dropped grk
+    const [ident, eng, num, berean] = verseWords[i]; 
     const wordEl = document.createElement("span");
     wordEl.className = "word";
     const altSearch = elements.altSearch.checked;
@@ -2441,15 +2446,15 @@ function renderSingleVerse(container, book, chapter, verse, verseData, options, 
       if (engV === "compEng" && pEng.endsWith("—") && (i < verseWords.length - 1  || !showVerses)) engV = "compEngR"; 
       if (!elements.normalized.checked || pEng === rEng) {
         if (elements.customFormat.checked) {
-          wordEl.appendChild(createClickableSpan(engV, processFormatting(pEng), wordEl, pEng));
+          wordEl.appendChild(createClickableSpan(engV, processFormatting(pEng), wordEl, pEng, berean));
         } else {
-          wordEl.appendChild(createClickableSpan(engV, pEng, wordEl));
+          wordEl.appendChild(createClickableSpan(engV, pEng, wordEl, null, berean));
         }
       } else {
         if (elements.customFormat.checked) {
-          wordEl.appendChild(createClickableSpan(engV, processFormatting(pEng), wordEl, rEng));
+          wordEl.appendChild(createClickableSpan(engV, processFormatting(pEng), wordEl, rEng, berean));
         } else {
-          wordEl.appendChild(createClickableSpan(engV, pEng, wordEl, rEng));
+          wordEl.appendChild(createClickableSpan(engV, pEng, wordEl, rEng, berean));
         }
       }
     }
@@ -5053,6 +5058,7 @@ const translations = {
   wycsp: "alt/WycSP.json",
   tynsp: "alt/Tyn1526SP.json",
   kjv1611: "alt/KJV1611.json",
+  mbsb: "alt/MBSB.json",
 };
 
 const translationsx = {
@@ -5079,7 +5085,8 @@ const translationAbbrevs = {
   "tyn": "Tyndale",
   "tynsp": "TYN (sp)",
   "wyc": "Wycliffe",
-  "wycsp": "Wycliffe (sp)"
+  "wycsp": "Wycliffe (sp)",
+  "mbsb": "M/BSB"
 };
 
 const select = document.getElementById("translationSelect");

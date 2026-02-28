@@ -155,8 +155,7 @@
     <select id="translationSelect" autocomplete="off">
       <option value="none" selected>None</option>
       <option value="web">World English Bible 2020</option>
-      <option value="bsb">Berean Standard Bible 2023</option>
-      <option value="msb">Majority Standard Bible 2023</option>
+      <option value="mbsb">M/BSB 2023</option>
       <option value="kjv">King James 1769</option>
       <option value="kjv1611">King James 1611</option>
       <option value="gen">Geneva 1599</option>
@@ -270,12 +269,12 @@
   </div>
   <div id="navHeader">
     <!-- <button onclick="updateBCV(-3)">◀Book</button> -->
-    <button onclick="updateBCV(-2)" title="Navigate back one chapter. Use shift + left arrow.">◀ Ch.</button>
-    <button onclick="updateBCV(-4)" title="Navigate back one page. Use up arrow.">◀ Pg.</button>
-    <button onclick="updateBCV(-1)" title="Navigate back one verse. Use left arrow.">◀ Vs.</button>
-    <button onclick="updateBCV(1)" title="Navigate back one verse. Use right arrow.">Vs. ▶</button>
-    <button onclick="updateBCV(4)" title="Navigate back one page. Use down arrow.">Pg. ▶</button>
-    <button onclick="updateBCV(2)" title="Navigate forward one chapter. Use shift + right arrow.">Ch. ▶</button>
+    <button onclick="updateBCV(-2)" title="Navigate back one chapter. Use shift + left arrow.">◀ Chapter</button>
+    <button onclick="updateBCV(-4)" title="Navigate back one page. Use up arrow.">◀ Page</button>
+    <button onclick="updateBCV(-1)" title="Navigate back one verse. Use left arrow.">◀ Verse</button>
+    <button onclick="updateBCV(1)" title="Navigate back one verse. Use right arrow.">Verse ▶</button>
+    <button onclick="updateBCV(4)" title="Navigate back one page. Use down arrow.">Page ▶</button>
+    <button onclick="updateBCV(2)" title="Navigate forward one chapter. Use shift + right arrow.">Chapter ▶</button>
     <!-- <button onclick="updateBCV(3)">Book▶</button> -->
   </div>
   <!-- History Buttons -->
@@ -292,7 +291,7 @@
     <div class="help-content">
       <h2 style="margin-top: 0;">
         How to Use This Tool 
-        <a href="http://ghukek.com/ght.html" style="font-size: 0.6em; margin-left: 0.5em;">(More info and contact)</a>
+        <a href="/ght.html" style="font-size: 0.6em; margin-left: 0.5em;">(More info and contact)</a>
       </h2>
       <h3>Recent Changes:</h3>
       <ul>
@@ -300,6 +299,7 @@
       <li>12 Feb 26: Major update adding secondary translations and several bug fixes and UI improvements.</li>
       <li>25 Feb 26: Minor update fixing several bugs and making UI/UX improvements.</li>
       <li>xx Mar 26: Minor update re-routing some back-end logic and implementing search limiting.</li>
+      <li>COMING SOON: What's next? Check <a href="/ght-i-raw.html">the development version</a> to see what I'm working on.</li>
       </ul>
       <h3>Reference Selection:</h3>
       <p>Select your start or end book, chapter, and verse from "Start Ref" and "End Ref". </p>
