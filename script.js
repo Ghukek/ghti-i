@@ -546,6 +546,7 @@ function loadState(panelID, increment, fromChangeTranslation = false) {
 
   // Trigger appropriate re-run
   updateDisplay();
+  saveSettings();
   if (currentRender === "search") searchVerses();
   else render();
   if (originalPanel && targetPanel !== originalPanel) {
@@ -974,7 +975,7 @@ function buildVerses(prefix, bookIndex, chapIndex) {
 }
 
 function updateDisplay() {
-  if (debugMode) console.log("togglePopup()");
+  if (debugMode) console.log("updateDisplay()");
   ["Start", "End"].forEach(prefix => {
     const b = document.getElementById("book" + prefix).value;
     const c = document.getElementById("chapter" + prefix).value;
@@ -1779,10 +1780,10 @@ function render(customVerses = null, inDouble = false, isRef = false) {
   if (elements.linkPanels.checked && (elements.horizPanel.checked || elements.vertPanel.checked) && currentRender === "reference" && !inDouble) { 
     let activePanel = getActivePanelId();
     let inactivePanel = activePanel === 1 ? 0 : 1;
+    render(customVerses, true, true);
     activate(outputContainer.querySelector(`[data-panel-i-d="${inactivePanel}"]`), elements.gapInput.value);
     render(customVerses, true, true);
     activate(outputContainer.querySelector(`[data-panel-i-d="${activePanel}"]`), elements.gapInput.value);
-    render(customVerses, true, true);
     if (debugMode) console.log("end render()");
     return
   }
@@ -2016,7 +2017,7 @@ function render(customVerses = null, inDouble = false, isRef = false) {
     }
   } else {
     let refVerses = getRefResults();
-    render(refVerses, false, true);
+    render(refVerses, inDouble, true);
     return
   }
 
@@ -2074,6 +2075,7 @@ function getRefResults(refData = null) {
   let lastChapter = null;
   let count = 0;
 
+  const isFirstPanel = getActivePanelId() === 0;
   const useBaseData = (select.value === "none" || isFirstPanel) ? true : false;
   let currData = useBaseData ? baseData : compData;
 
@@ -4070,10 +4072,10 @@ function multiWordSearch(searchStr, lookupInd) {
             verse: cv.verse,
             verseData: cv.verseData
           });
+          results.push({ book: -1, chapter: -1, verse: -1, verseData: "bar"});
         }
         count++
       });
-      results.push({ book: -1, chapter: -1, verse: -1, verseData: "bar"});
     } else {
       // Multi-term search – use sequence logic
       const matchResult = checkWordSequence(allWords, lookupTerms, true, true);
@@ -4092,10 +4094,10 @@ function multiWordSearch(searchStr, lookupInd) {
                 verse: cv.verse,
                 verseData: cv.verseData
               });
+              results.push({ book: -1, chapter: -1, verse: -1, verseData: "bar"});
             }
             count++
           });
-          results.push({ book: -1, chapter: -1, verse: -1, verseData: "bar"});
         }
       }
     }
