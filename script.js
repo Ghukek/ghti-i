@@ -1814,7 +1814,7 @@ function render(customVerses = null, inDouble = false, isRef = false) {
       insertFwdBack(container)
     }
 
-    const isWordList = Array.isArray(customVerses[0]) && customVerses[0].length === 3;
+    const isWordList = Array.isArray(customVerses[0]) && (customVerses[0].length === 3 || customVerses[0].length === 4);
     const uniqueWords = document.getElementById('uniqueWords').checked;
 
     if (isWordList) {
@@ -1838,7 +1838,7 @@ function render(customVerses = null, inDouble = false, isRef = false) {
       wrapper.appendChild(header);
 
       // Add data rows
-      customVerses.forEach(([ident, eng, ref]) => {
+      customVerses.forEach(([ident, eng, ref, berean]) => {
         const row = document.createElement("div");
         row.className = "word-row";
 
@@ -1914,8 +1914,13 @@ function render(customVerses = null, inDouble = false, isRef = false) {
         }
 
         // Helper for popup-enabled columns
-        const makePopupCell = (className, content, isRoot = false) => {
+        const makePopupCell = (className, content, isRoot = false, berean = null) => {
           const span = document.createElement("span");
+          if (berean === 0) {
+            className = "MSB";
+          } else if (berean === 1) {
+            className = "BSB";
+          }
           span.className = `col ${className}`;
           span.innerHTML = content;
 
@@ -1961,7 +1966,7 @@ function render(customVerses = null, inDouble = false, isRef = false) {
 
         // Conditionally add selected columns
         if (showGreek)   row.appendChild(makePopupCell("greek", toGreek(grk)));
-        if (showEnglish) row.appendChild(makePopupCell(engV, eng || ""));
+        if (showEnglish) row.appendChild(makePopupCell(engV, eng || "", false, berean));
         if (showPcode)   row.appendChild(makePopupCell("pcode", pcode || ""));
         if (showStrongs) row.appendChild(makePopupCell("strongs", strongs || ""));
         if (showRoots) {
@@ -3732,7 +3737,7 @@ function handleWordMatches(term, matches) {
   const uniqueFound = new Map();
 
   forEachVerse((b, c, v, verseData) => {
-    verseData.forEach(([ident, eng]) => {
+    verseData.forEach(([ident, eng, _, berean]) => {
       let word = (eng || "").toLowerCase();
       if (normalized) {
         word = word.replace(/,|\.|\(|\)|:|"|’|‘|`|”|“|'|;|–|—|\?|\[\?\]|!/g, '');
@@ -3758,7 +3763,7 @@ function handleWordMatches(term, matches) {
 
       // ---------- NORMAL MODE ----------
       if (count >= startIndex && count < endIndex) {
-        matches.push([ident, eng, `${bookAbb[b]} ${c + 1}:${v + 1}`]);
+        matches.push([ident, eng, `${bookAbb[b]} ${c + 1}:${v + 1}`, berean]);
       }
 
       count++;
