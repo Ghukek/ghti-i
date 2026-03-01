@@ -3019,7 +3019,7 @@ function resetSettings(targetAttr = null, panelOnly = null) {
   }
 }
 
-function loadSettings(pageload=true, global=true) {
+function loadSettings(pageload=false, global=true) {
   if (debugMode) console.log("loadSettings()");
   let panelId = getActivePanelId();
   if (panelId === 1 && select.value !== "none") {
@@ -3039,6 +3039,10 @@ function loadSettings(pageload=true, global=true) {
   for (const [key, value] of Object.entries(merged)) {
     const el = elements[key] || document.getElementById(key);
     if (!el) continue;
+
+    if ((key.includes("Start") || key.includes("End")) && !pageload) {
+      continue;
+    }
 
     if (el.type === "checkbox" || el.type === "radio") {
       el.checked = value;
@@ -4101,10 +4105,12 @@ function multiWordSearch(searchStr, lookupInd) {
             verse: cv.verse,
             verseData: cv.verseData
           });
-          results.push({ book: -1, chapter: -1, verse: -1, verseData: "bar"});
         }
         count++
       });
+      if (count >= startIndex && count < endIndex) {
+        results.push({ book: -1, chapter: -1, verse: -1, verseData: "bar"});
+      }
     } else {
       // Multi-term search – use sequence logic
       const matchResult = checkWordSequence(allWords, lookupTerms, true, true);
@@ -4123,10 +4129,12 @@ function multiWordSearch(searchStr, lookupInd) {
                 verse: cv.verse,
                 verseData: cv.verseData
               });
-              results.push({ book: -1, chapter: -1, verse: -1, verseData: "bar"});
             }
             count++
           });
+          if (count >= startIndex && count < endIndex) {
+            results.push({ book: -1, chapter: -1, verse: -1, verseData: "bar"});
+          }
         }
       }
     }
