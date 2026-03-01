@@ -1810,7 +1810,7 @@ function render(customVerses = null, inDouble = false, isRef = false) {
 
   // Check for custom input (either word list or verse list)
   if (customVerses && Array.isArray(customVerses)) {
-    if (searchState[currentPanelId].boundaries.length > 1) {
+    if (searchState[currentPanelId].boundaries.length > 1 && currentRender === "search") {
       insertFwdBack(container)
     }
 
@@ -1999,7 +1999,13 @@ function render(customVerses = null, inDouble = false, isRef = false) {
       }
     } else {
       // Default verse-style rendering
-      if (currentRender === "search")showVerses = true;
+      if (elements.highlightSearch.checked) {
+        customVerses = highlightCustomVerses(
+          customVerses,
+          elements.searchInput.value.trim().split(/\s+/)
+        );
+      }
+      if (currentRender === "search") showVerses = true;
       customVerses.forEach(({ book, chapter, verse, verseData }) => {
         ({ passUnderscore, countContext, verseEl } = renderSingleVerse(
           container,
@@ -2042,6 +2048,154 @@ function render(customVerses = null, inDouble = false, isRef = false) {
   
   if (debugMode) console.log("end render()");
   return;
+}
+
+function highlightCustomVerses(customVerses, searchTerms) {
+  if (debugMode) console.log("highlightCustomVerses()");
+
+  let window = [];
+
+  function processWindow(win) {
+    if (!win.length) return;
+
+    // flatten tokens with verse refs
+    const flat = [];
+    win.forEach(v=>{
+      v.verseData.forEach(w=>{
+        flat.push({ wordData:w });
+      });
+    });
+
+    const marked = markWordSequence(flat, searchTerms);
+
+    // write results back into verses
+    let i=0;
+    win.forEach(v=>{
+      v.verseData = v.verseData.map(tok=>{
+        const out = [...tok];
+        out[4] = marked[i++][4];
+        return out;
+      });
+    });
+  }
+
+  for (const verse of customVerses) {
+
+    // separator = process accumulated window
+    if (verse.verseData === "bar") {
+      processWindow(window);
+      window = [];
+      continue;
+    }
+
+    window.push(verse);
+  }
+
+  // last window
+  processWindow(window);
+
+  return customVerses;
+}
+
+function markWordSequence(allWords, latinWords) {
+  if (debugMode) console.log("markWordSequence()");
+  const ordered = elements.ordered.checked;
+  const adjacent = elements.adjacent.checked;
+  let exact = elements.exactMatch.checked;
+
+  if (!latinWords || latinWords.length === 0) return allWords;
+
+  const tokens = allWords.map(({ wordData }) => wordData);
+  const len = tokens.length;
+  const n = latinWords.length;
+
+  const mark = new Set();
+
+  // ---------- CASE 1 ----------
+  if (!ordered && !adjacent) {
+    for (let wi = 0; wi < n; wi++) {
+      const sw = latinWords[wi];
+      tokens.forEach((t,i)=>{
+        if (tokenMatchesWord(t, sw, exact))
+          mark.add(i);
+      });
+    }
+  }
+
+  // ---------- CASE 2 ----------
+  else if (ordered && adjacent) {
+    for (let start=0; start<=len-n; start++) {
+      let match=true;
+
+      for (let k=0;k<n;k++) {
+        if (!tokenMatchesWord(tokens[start+k], latinWords[k], exact)) {
+          match=false;
+          break;
+        }
+      }
+
+      if (match)
+        for (let k=0;k<n;k++)
+          mark.add(start+k);
+    }
+  }
+
+  // ---------- CASE 3 ----------
+  else if (ordered && !adjacent) {
+    for (let start=0; start<len; start++) {
+      let idx=start;
+      const found=[];
+
+      for (let w=0; w<n; w++) {
+        let ok=false;
+
+        for (; idx<len; idx++) {
+          if (tokenMatchesWord(tokens[idx], latinWords[w], exact)) {
+            found.push(idx++);
+            ok=true;
+            break;
+          }
+        }
+        if (!ok) break;
+      }
+
+      if (found.length===n)
+        found.forEach(i=>mark.add(i));
+    }
+  }
+
+  // ---------- CASE 4 ----------
+  else {
+    for (let start=0; start<=len-n; start++) {
+      const window=tokens.slice(start,start+n);
+      const used=new Set();
+      const temp=[]; // store candidate indices
+      let count=0;
+
+      for (let wi=0; wi<n; wi++) {
+        for (let ti=0; ti<n; ti++) {
+          if (used.has(ti)) continue;
+
+          if (tokenMatchesWord(window[ti], latinWords[wi], exact)) {
+            used.add(ti);
+            temp.push(start+ti); // store, don't mark yet
+            count++;
+            break;
+          }
+        }
+      }
+
+      if (count===n)
+        temp.forEach(i=>mark.add(i));
+    }
+  }
+
+  // ---------- APPLY MARKS ----------
+  return tokens.map((tok,i)=>{
+    const out=[...tok];
+    out[4]=mark.has(i);
+    return out;
+  });
 }
 
 function getRefResults(refData = null) {
@@ -2305,7 +2459,7 @@ function renderSingleVerse(container, book, chapter, verse, verseData, options, 
   // word rendering logic here, same as before...
 
   for (let i = 0; i < verseWords.length; i++) {
-    const [ident, eng, num, berean] = verseWords[i]; 
+    const [ident, eng, num, berean, highlight] = verseWords[i]; 
     const wordEl = document.createElement("span");
     wordEl.className = "word";
     const altSearch = elements.altSearch.checked;
@@ -2386,8 +2540,8 @@ function renderSingleVerse(container, book, chapter, verse, verseData, options, 
       pEng = eng;
       localPassUnderscore = 0; // safe reset
     }
-
-    if (elements.highlightSearch.checked && elements.searchInput.value.trim() !== "") {
+    
+/*     if (elements.highlightSearch.checked && elements.searchInput.value.trim() !== "") {
       const searchTerms = elements.searchInput.value.trim().split(/\s+/);
       let hEng = pEng || "";
       if (normalized) {
@@ -2423,6 +2577,9 @@ function renderSingleVerse(container, book, chapter, verse, verseData, options, 
           break; // no need to keep checking once we found a match
         }
       } 
+    } */
+    if (elements.highlightSearch.checked && highlight) {
+      wordEl.classList.add("highlightSearch");
     }
 
     wordEl.dataset.grk = grk || "";
@@ -3519,9 +3676,11 @@ function refSearch(searchTerm) {
 
     if (truncated) {
       allResults.push({ book: -1, chapter: -1, verse: -1, verseData: "too many" });
-    } else {
-      allResults.pop(); // remove last separator if not truncated
-    }
+    } 
+
+    if (allResults.at(-1)?.verseData === "bar") allResults.pop();
+    if (allResults.at(0)?.verseData === "bar") allResults.shift();
+
     render(allResults);
     return true;
   }
@@ -3816,42 +3975,44 @@ function prevPage() {
   }
 }
 
+// Helper to test if a verse word matches a search word index
+function tokenMatchesWord(tokenVal, searchWord, exact = false) {
+  if (!tokenVal || !searchWord) return false;
+
+  if (Array.isArray(searchWord) && searchWord.length === 0) return false;
+
+  if (!Number.isInteger(tokenVal[0])) { // BEGIN LXX Helper
+    const grkToken = toGreek(tokenVal[0])
+
+    let target = Array.isArray(searchWord) ? searchWord[0] : searchWord;
+    if (!Number.isInteger(target) && target.startsWith('=')) {
+      exact = true;
+      target = target.slice(1);
+    }
+
+    return exact ? (grkToken === target) : grkToken.includes(target);
+  } // END LXX Helper
+
+  // searchWord is now either an array of idents or a single latin word.
+  if (Array.isArray(searchWord)) {
+    return searchWord.includes(tokenVal[0]);
+  } else {
+    let lowerToken = tokenVal[1].toLowerCase();
+    return termMatch(searchWord, lowerToken)
+  }
+}
+
 function checkWordSequence(allWords, latinWords, isGreek, matchIdent = false) {
   if (debugModeExtra) console.log("checkWordSequence()");
   const normalized = elements.normalized.checked;
   const ordered = elements.ordered.checked;       // new checkbox for ordered matching
   const adjacent = elements.adjacent.checked;     // new checkbox for adjacent matching
+  let exact = elements.exactMatch.checked;
   if (!latinWords || latinWords.length === 0) return false;
 
   const normalizedWords = allWords.map(({ wordData }) => {
     return wordData; // Extract wordData from allWords tokens
   });
-
-  // Helper to test if a verse word matches a search word index
-  function tokenMatchesWord(tokenVal, searchWord) {
-    if (!tokenVal || !searchWord) return false;
-
-    if (!Number.isInteger(tokenVal[0])) { // BEGIN LXX Helper
-      grkToken = toGreek(tokenVal[0])
-
-      let target = Array.isArray(searchWord) ? searchWord[0] : searchWord;
-      let exact = elements.exactMatch.checked;
-      if (!Number.isInteger(target) && target.startsWith('=')) {
-        exact = true;
-        target = target.slice(1);
-      }
-
-      return exact ? (grkToken === target) : grkToken.includes(target);
-    } // END LXX Helper
-
-    // searchWord is now either an array of idents or a single latin word.
-    if (Array.isArray(searchWord)) {
-      return searchWord.includes(tokenVal[0]);
-    } else {
-      let lowerToken = tokenVal[1].toLowerCase();
-      return termMatch(searchWord, lowerToken)
-    }
-  }
 
   // Case 1: unordered, non-adjacent (just presence)
   if (!ordered && !adjacent) {
@@ -3859,7 +4020,7 @@ function checkWordSequence(allWords, latinWords, isGreek, matchIdent = false) {
     const matchedIndices = [];
     for (let wi = 0; wi < latinWords.length; wi++) {
       const sw = latinWords[wi];
-      const idx = normalizedWords.findIndex((nw, i) => tokenMatchesWord(nw, sw) && !matchedIndices.includes(i));
+      const idx = normalizedWords.findIndex((nw, i) => tokenMatchesWord(nw, sw, exact) && !matchedIndices.includes(i));
       if (idx === -1) return false; // missing a word
       matchedIndices.push(idx);
     }
@@ -3877,7 +4038,7 @@ function checkWordSequence(allWords, latinWords, isGreek, matchIdent = false) {
     for (let start = 0; start <= len - n; start++) {
       let match = true;
       for (let offset = 0; offset < n; offset++) {
-        if (!tokenMatchesWord(normalizedWords[start + offset], latinWords[offset])) {
+        if (!tokenMatchesWord(normalizedWords[start + offset], latinWords[offset], exact)) {
           match = false;
           break;
         }
@@ -3898,7 +4059,7 @@ function checkWordSequence(allWords, latinWords, isGreek, matchIdent = false) {
       const sw = latinWords[wi];
       let foundIndex = -1;
       for (let i = lastMatchIndex + 1; i < len; i++) {
-        if (tokenMatchesWord(normalizedWords[i], sw)) {
+        if (tokenMatchesWord(normalizedWords[i], sw, exact)) {
           foundIndex = i;
           break;
         }
@@ -3923,7 +4084,7 @@ function checkWordSequence(allWords, latinWords, isGreek, matchIdent = false) {
         for (let ti = 0; ti < n; ti++) {
           if (usedTokens.has(ti)) continue;
 
-          if (tokenMatchesWord(windowWords[ti], latinWords[wi])) {
+          if (tokenMatchesWord(windowWords[ti], latinWords[wi], exact)) {
             usedTokens.add(ti);
             matchedCount++;
             break;
@@ -4145,7 +4306,8 @@ function multiWordSearch(searchStr, lookupInd) {
     searchState[currentPanelId].boundaries.push(endIndex);
   }
 
-  results.pop();
+  if (results.at(-1)?.verseData === "bar") results.pop();
+  if (results.at(0)?.verseData === "bar") results.shift();
 
   return results;
 }
