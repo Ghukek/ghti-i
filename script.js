@@ -785,11 +785,27 @@ function setupEventListeners() {
 
   // For checkboxes or inputs that trigger searchVerses
   [
-    "centerRange", "showContext", "exactMatch",
-    "uniqueWords", "ordered", "adjacent", "normalized","expandMorph"
+    "centerRange", "exactMatch", "ordered", "adjacent", "normalized","expandMorph"
   ].forEach(id => {
     const el = elements[id];
     el.addEventListener("change", searchChange);
+  });
+  
+  // For mutually exclusive showContext and uniqueWords
+  ["showContext", "uniqueWords"].forEach(id => {
+    const el = elements[id];
+    el.addEventListener("change", (e) => {
+      const otherId = id === "showContext" ? "uniqueWords" : "showContext";
+      const otherEl = elements[otherId];
+
+      // If this element is checked, uncheck the other
+      if (el.checked) {
+        otherEl.checked = false;
+      }
+
+      // Call your existing search change handler
+      searchChange(e);
+    });
   });
 
   // Button (not in elements)
