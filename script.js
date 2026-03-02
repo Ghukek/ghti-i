@@ -790,7 +790,7 @@ function setupEventListeners() {
     const el = elements[id];
     el.addEventListener("change", searchChange);
   });
-  
+
   // For mutually exclusive showContext and uniqueWords
   ["showContext", "uniqueWords"].forEach(id => {
     const el = elements[id];
@@ -1480,7 +1480,7 @@ function compareBCV(b1, c1, v1, b2, c2, v2) {
 }
 
 function addVerses(b, c, v, delta, err = false) {
-  if (debugMode) console.log("addVerses()");
+  if (debugModeExtra) console.log("addVerses()");
   // delta can be positive (add) or negative (subtract)
   while (delta !== 0) {
     if (!baseData[b] || !baseData[b][c]) break;
@@ -2077,6 +2077,7 @@ function highlightCustomVerses(customVerses, searchTerms) {
     // flatten tokens with verse refs
     const flat = [];
     win.forEach(v=>{
+      if (v.book === -1) return; // separator
       v.verseData.forEach(w=>{
         flat.push({ wordData:w });
       });
@@ -2087,6 +2088,7 @@ function highlightCustomVerses(customVerses, searchTerms) {
     // write results back into verses
     let i=0;
     win.forEach(v=>{
+      if (v.book === -1) return; // separator
       v.verseData = v.verseData.map(tok=>{
         const out = [...tok];
         out[4] = marked[i++][4];
@@ -2131,78 +2133,108 @@ function markWordSequence(allWords, latinWords) {
   if (!ordered && !adjacent) {
     for (let wi = 0; wi < n; wi++) {
       const sw = latinWords[wi];
-      tokens.forEach((t,i)=>{
-        if (tokenMatchesWord(t, sw, exact))
-          mark.add(i);
-      });
+      if (lookInLookups(sw)) {
+        tokens.forEach((t,i)=>{
+          if (matchesLookup(sw, lookupdb[t[0]]))
+            mark.add(i);
+        });
+      } else {
+        tokens.forEach((t,i)=>{
+          if (tokenMatchesWord(t, sw, exact))
+            mark.add(i);
+        });
+      }
     }
   }
 
   // ---------- CASE 2 ----------
   else if (ordered && adjacent) {
-    for (let start=0; start<=len-n; start++) {
-      let match=true;
+    for (let start = 0; start <= len - n; start++) {
+      let match = true;
 
-      for (let k=0;k<n;k++) {
-        if (!tokenMatchesWord(tokens[start+k], latinWords[k], exact)) {
-          match=false;
+      for (let k = 0; k < n; k++) {
+        const sw = latinWords[k];
+        const token = tokens[start + k];
+
+        const ok = lookInLookups(sw)
+          ? matchesLookup(sw, lookupdb[token[0]])
+          : tokenMatchesWord(token, sw, exact);
+
+        if (!ok) {
+          match = false;
           break;
         }
       }
 
       if (match)
-        for (let k=0;k<n;k++)
-          mark.add(start+k);
+        for (let k = 0; k < n; k++)
+          mark.add(start + k);
     }
   }
 
   // ---------- CASE 3 ----------
   else if (ordered && !adjacent) {
-    for (let start=0; start<len; start++) {
-      let idx=start;
-      const found=[];
+    for (let start = 0; start < len; start++) {
+      let idx = start;
+      const found = [];
 
-      for (let w=0; w<n; w++) {
-        let ok=false;
+      for (let w = 0; w < n; w++) {
+        const sw = latinWords[w];
+        let ok = false;
 
-        for (; idx<len; idx++) {
-          if (tokenMatchesWord(tokens[idx], latinWords[w], exact)) {
+        for (; idx < len; idx++) {
+          const token = tokens[idx];
+
+          const match = lookInLookups(sw)
+            ? matchesLookup(sw, lookupdb[token[0]])
+            : tokenMatchesWord(token, sw, exact);
+
+          if (match) {
             found.push(idx++);
-            ok=true;
+            ok = true;
             break;
           }
         }
+
         if (!ok) break;
       }
 
-      if (found.length===n)
-        found.forEach(i=>mark.add(i));
+      if (found.length === n)
+        found.forEach(i => mark.add(i));
     }
   }
 
   // ---------- CASE 4 ----------
   else {
-    for (let start=0; start<=len-n; start++) {
-      const window=tokens.slice(start,start+n);
-      const used=new Set();
-      const temp=[]; // store candidate indices
-      let count=0;
+    for (let start = 0; start <= len - n; start++) {
+      const window = tokens.slice(start, start + n);
+      const used = new Set();
+      const temp = [];
+      let count = 0;
 
-      for (let wi=0; wi<n; wi++) {
-        for (let ti=0; ti<n; ti++) {
+      for (let wi = 0; wi < n; wi++) {
+        const sw = latinWords[wi];
+
+        for (let ti = 0; ti < n; ti++) {
           if (used.has(ti)) continue;
 
-          if (tokenMatchesWord(window[ti], latinWords[wi], exact)) {
+          const token = window[ti];
+
+          const match = lookInLookups(sw)
+            ? matchesLookup(sw, lookupdb[token[0]])
+            : tokenMatchesWord(token, sw, exact);
+
+          if (match) {
             used.add(ti);
-            temp.push(start+ti); // store, don't mark yet
+            temp.push(start + ti);
             count++;
             break;
           }
         }
       }
 
-      if (count===n)
-        temp.forEach(i=>mark.add(i));
+      if (count === n)
+        temp.forEach(i => mark.add(i));
     }
   }
 
@@ -3541,6 +3573,14 @@ function tryParseReference(refString) {
 function lookInLookups(term) {
   if (debugMode) console.log("lookInLookups()");
   if (!term) return false;
+
+  if (term.startsWith('~')) {
+    term = term.slice(1);
+  } 
+
+  if (term.startsWith('=')) {
+    term = term.slice(1);
+  }
 
   // Check if contains + or |
   if (term.includes('+') || term.includes('|')) return true;
