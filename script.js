@@ -3571,7 +3571,7 @@ function tryParseReference(refString) {
 
 // Function to check if term is a possible match
 function lookInLookups(term) {
-  if (debugMode) console.log("lookInLookups()");
+  if (debugModeExtra) console.log("lookInLookups()");
   if (!term) return false;
 
   if (term.startsWith('~')) {
@@ -5298,6 +5298,7 @@ const translations = {
   tynsp: "alt/Tyn1526SP.json",
   kjv1611: "alt/KJV1611.json",
   mbsb: "alt/MBSB.json",
+  kjvna: "alt/KJVNA.json",
 };
 
 const translationsx = {
@@ -5311,6 +5312,8 @@ const translationsx = {
   wycsp: "alt/WycSPx.json",
   tynsp: "alt/Tyn1526SP.json",
   kjv1611: "alt/KJV1611x.json",
+  mbsb: "alt/MBSB.json",
+  kjvna: "alt/KJVNA.json",
 };
 
 // Mapping of translation values to their abbreviations
@@ -5325,7 +5328,8 @@ const translationAbbrevs = {
   "tynsp": "TYN (sp)",
   "wyc": "Wycliffe",
   "wycsp": "Wycliffe (sp)",
-  "mbsb": "M/BSB"
+  "mbsb": "M/BSB",
+  "kjvna": "KJV/NA28"
 };
 
 const select = document.getElementById("translationSelect");
@@ -5363,7 +5367,7 @@ function showDisclaimer() {
   togglePopup("panelPopup");
   // Show modal with warning
   modalText.innerHTML = 
-    "The GHT team is not responsible for the content of other translations, and their inclusion in this tool should not be considered endorsement. Any errors, omissions, additions, or interpretations remain the responsibility of the translation source organization.<br><br>All translations provided here are Public Domain, see <a href='jsonsource.html' target='_blank' rel='noopener noreferrer'>here</a> for a list of sources.";
+    "The GHT team is not responsible for the content of other translations, and their inclusion in this tool should not be considered endorsement. Any errors, omissions, additions, or interpretations remain the responsibility of the translation source organization.<br><br>See <a href='jsonsource.html' target='_blank' rel='noopener noreferrer'>here</a> for a list of sources.";
   translationModal.style.display = "block";
 
   // Wait for user acknowledgment
