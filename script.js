@@ -675,6 +675,7 @@ function handleGreekInput(e) {
     input.value = normalized;
     input.setSelectionRange(pos, pos);
   }
+  saveSettings('save-id');
 }
 
 function handleGreekBeforeInput(e, convertToGreekCheckbox) {
@@ -2133,7 +2134,7 @@ function markWordSequence(allWords, latinWords) {
   if (!ordered && !adjacent) {
     for (let wi = 0; wi < n; wi++) {
       const sw = latinWords[wi];
-      if (lookInLookups(sw)) {
+      if (/[α-ω]/i.test(sw) || lookInLookups(sw)) {
         tokens.forEach((t,i)=>{
           if (matchesLookup(sw, lookupdb[t[0]]))
             mark.add(i);
@@ -2156,7 +2157,7 @@ function markWordSequence(allWords, latinWords) {
         const sw = latinWords[k];
         const token = tokens[start + k];
 
-        const ok = lookInLookups(sw)
+        const ok = /[α-ω]/i.test(sw) || lookInLookups(sw)
           ? matchesLookup(sw, lookupdb[token[0]])
           : tokenMatchesWord(token, sw, exact);
 
@@ -2185,7 +2186,7 @@ function markWordSequence(allWords, latinWords) {
         for (; idx < len; idx++) {
           const token = tokens[idx];
 
-          const match = lookInLookups(sw)
+          const match = /[α-ω]/i.test(sw) || lookInLookups(sw)
             ? matchesLookup(sw, lookupdb[token[0]])
             : tokenMatchesWord(token, sw, exact);
 
@@ -2220,7 +2221,7 @@ function markWordSequence(allWords, latinWords) {
 
           const token = window[ti];
 
-          const match = lookInLookups(sw)
+          const match = /[α-ω]/i.test(sw) || lookInLookups(sw)
             ? matchesLookup(sw, lookupdb[token[0]])
             : tokenMatchesWord(token, sw, exact);
 
@@ -4979,7 +4980,7 @@ function loadPanelState(panelID) {
   elements.bookEnd.value = state.bookEnd;
   elements.chapterEnd.value = state.chapterEnd;
   elements.verseEnd.value = state.verseEnd;
-  elements.searchInput.value = state.searchInput;
+  //elements.searchInput.value = state.searchInput;
   elements.gapInput.value = state.gapInput;
   autoGapInputWidth(elements.gapInput);
   currentRender = state.currentRender;
