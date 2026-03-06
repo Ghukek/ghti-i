@@ -275,7 +275,7 @@ function loadBaseJson() {
     setupEventListeners();
     setFontSize();
     setMode("init");
-    if (currentRender === "search") {
+    if (currentRender !== "reference") {
       searchVerses();
     } else {
       render();
@@ -321,15 +321,14 @@ function loadBaseJson() {
     setupEventListeners();
     setFontSize();
     setMode("init");
-    if (currentRender === "search") {
+    if (currentRender !== "reference") {
       searchVerses();
     } else {
       render();
     }
     // getCount is depreciated now that the NT is complete. If we do the OT, we will re-enable it.
     // getCount();
-  })
-  .catch(err => {
+  }).catch(err => {
     console.error("Error loading JSON files:", err);
   });
 }
@@ -368,7 +367,7 @@ document.querySelectorAll("[data-id]").forEach(el => {
 let lastChanged = null; // Track which selection was last changed (start or end) to use when auto-adjusting selections
 const onOptionsChange = () => {
   saveSettings();
-  if (currentRender === "search") {
+  if (currentRender !== "reference") {
     // We are showing search results, so re-run search to apply filters
     searchVerses();
   } else {
@@ -422,7 +421,13 @@ function saveState(empty = false) {
 
   let override = false;
   if (panelID !== 0 && elements.linkPanels.checked && stack[index]) { // When link panels is active, only update history stack on second panel if search.
-    if (stack[index]['currentRender'] !== "search") { // Nested if-statement needed due to the initial load of 3rd panel having no valid [index]['currentRender'] value, but that will never be a search since a translation load is always reference-call. If this were in the first if-statement, it would cause an error on alternate translation load.
+    if (stack[index]['currentRender'] === "reference") { // Nested if-statement needed due to the initial load of 3rd panel having no valid [index]['currentRender'] value, but that will never be a search since a translation load is always reference-call. If this were in the first if-statement, it would cause an error on alternate translation load.
+      override = true;
+    }
+  }
+
+  if (panelID !== 0 && elements.linkSearch.checked && stack[index]) { // When link search is active, only update history stack on second panel if table search.
+    if (stack[index]['currentRender'] === "conSearch") { 
       override = true;
     }
   }
@@ -504,18 +509,34 @@ function loadState(panelID, increment, fromChangeTranslation = false) {
   let state = stack[index];
 
   if (panelID !== 0 && elements.linkPanels.checked && state) { // When link panels is active, do not load any reference histories.
-    while (state['currentRender'] === "reference" && index > 0 && increment !== 0 && index < stack.length - 1) {
-      index += increment;
-      state = stack[index];
-    }
-    if ((index === 0 || increment === 0 || index === stack.length - 1) && state['currentRender'] === "reference" && !fromChangeTranslation) {
-      if (increment !== 0) showToast("No more search histories to load in this direction.\n Use left navigation buttons to navigate reference histories when panels are linked.", 3000);
-      restoring = false;
-      historyIndexes[stackID] = index;
-      if (originalPanel && targetPanel !== originalPanel) {
-        activate(originalPanel);
+    if (elements.linkSearch.checked) {
+      while (state['currentRender'] !== "tabSearch" && index > 0 && increment !== 0 && index < stack.length - 1) {
+        index += increment;
+        state = stack[index];
       }
-      return;
+      if ((index === 0 || increment === 0 || index === stack.length - 1) && state['currentRender'] !== "tabSearch" && !fromChangeTranslation) {
+        if (increment !== 0) showToast("No more search histories to load in this direction.\n Use left navigation buttons to navigate reference or context search histories when panels are linked.", 3000);
+        restoring = false;
+        historyIndexes[stackID] = index;
+        if (originalPanel && targetPanel !== originalPanel) {
+          activate(originalPanel);
+        }
+        return;
+      }
+    } else {
+      while (state['currentRender'] === "reference" && index > 0 && increment !== 0 && index < stack.length - 1) {
+        index += increment;
+        state = stack[index];
+      }
+      if ((index === 0 || increment === 0 || index === stack.length - 1) && state['currentRender'] === "reference" && !fromChangeTranslation) {
+        if (increment !== 0) showToast("No more search histories to load in this direction.\n Use left navigation buttons to navigate reference histories when panels are linked.", 3000);
+        restoring = false;
+        historyIndexes[stackID] = index;
+        if (originalPanel && targetPanel !== originalPanel) {
+          activate(originalPanel);
+        }
+        return;
+      }
     }
   }
 
@@ -547,7 +568,7 @@ function loadState(panelID, increment, fromChangeTranslation = false) {
   // Trigger appropriate re-run
   updateDisplay();
   saveSettings();
-  if (currentRender === "search") searchVerses();
+  if (currentRender !== "reference") searchVerses();
   else render();
   if (originalPanel && targetPanel !== originalPanel) {
     activate(originalPanel);
@@ -738,7 +759,6 @@ function setupEventListeners() {
       populateVerses(b, 0, elements[verse]);
       elements[verse].value = 0;
       adjustSelections();
-      // Removed render() call. Handled by new fancy ref picker.
     });
 
     elements[chapter].addEventListener("change", (e) => {
@@ -748,13 +768,11 @@ function setupEventListeners() {
       populateVerses(b, c, elements[verse]);
       elements[verse].value = 0;
       adjustSelections();
-      // Removed render() call. Handled by new fancy ref picker.
     });
 
     elements[verse].addEventListener("change", (e) => {
       lastChanged = type;
       adjustSelections();
-      // Removed render() call. Handled by new fancy ref picker.
     });
   });
 
@@ -762,7 +780,7 @@ function setupEventListeners() {
   elements.gapInput.addEventListener("input", () => {
     let verseRange = parseInt(elements.gapInput.value, 10);
     if (isNaN(verseRange) || verseRange < 1) elements.gapInput.value = 1;
-    if (currentRender === "search") searchVerses();
+    if (currentRender !== "reference") searchVerses();
     else if (elements.enforceGap.checked) {
       lastChanged = "start";
       adjustSelections();
@@ -1492,7 +1510,11 @@ function applyUrlSearch() {
   
   autoGapInputWidth(elements.gapInput);
 
-  currentRender = "search";
+  if (params.get("c") === "1" || (params.get("search") && params.get("search").includes(" "))) {
+    currentRender = "conSearch";
+  } else {
+    currentRender = "tabSearch";
+  }
 }
 
 function showToast(message, duration = 2000) {
@@ -1831,19 +1853,16 @@ function insertFwdBack(container) {
 
 let centerFromSearch = false;
 let currentRender = "reference"; // used to track current rendering mode, changed in render()
-function render(customVerses = null, inDouble = false, isRef = false) {
+function render(customVerses = null, inDouble = false, curRen = "reference") {
   if (debugMode) console.log("render()");
-  if ((customVerses && Array.isArray(customVerses)) && !isRef) {
-    currentRender = "search";
-  } else {
-    currentRender = "reference";
-  }
+  console.log(curRen);
+  currentRender = curRen;
   if (elements.linkPanels.checked && (elements.horizPanel.checked || elements.vertPanel.checked) && currentRender === "reference" && !inDouble) { 
     let activePanel = getActivePanelId();
     let inactivePanel = activePanel === 1 ? 0 : 1;
-    render(customVerses, true, true);
+    render(customVerses, true, "reference");
     activate(outputContainer.querySelector(`[data-panel-i-d="${inactivePanel}"]`), elements.gapInput.value);
-    render(customVerses, true, true);
+    render(customVerses, true, "reference");
     activate(outputContainer.querySelector(`[data-panel-i-d="${activePanel}"]`), elements.gapInput.value);
     if (debugMode) console.log("end render()");
     return
@@ -1868,7 +1887,7 @@ function render(customVerses = null, inDouble = false, isRef = false) {
 
   // Check for custom input (either word list or verse list)
   if (customVerses && Array.isArray(customVerses)) {
-    if (searchState[currentPanelId].boundaries.length > 1 && currentRender === "search") {
+    if (searchState[currentPanelId].boundaries.length > 1 && currentRender !== "reference") {
       insertFwdBack(container)
     }
 
@@ -2063,7 +2082,7 @@ function render(customVerses = null, inDouble = false, isRef = false) {
           elements.searchInput.value.trim().split(/\s+/)
         );
       }
-      if (currentRender === "search") showVerses = true;
+      if (currentRender === "conSearch") showVerses = true;
       customVerses.forEach(({ book, chapter, verse, verseData }) => {
         ({ passUnderscore, countContext, verseEl } = renderSingleVerse(
           container,
@@ -2083,21 +2102,21 @@ function render(customVerses = null, inDouble = false, isRef = false) {
         ));
       });
       if (verseEl) container.appendChild(verseEl);
-      if (searchState[currentPanelId].boundaries.length > 1 && currentRender === "search") {
+      if (searchState[currentPanelId].boundaries.length > 1 && currentRender === "conSearch") {
         insertFwdBack(container)
       }
-      if (elements.linkSearch.checked && (elements.horizPanel.checked || elements.vertPanel.checked) && currentRender === "search" && !inDouble) { 
+      if (elements.linkSearch.checked && (elements.horizPanel.checked || elements.vertPanel.checked) && currentRender === "conSearch" && !inDouble) { 
         let activePanel = getActivePanelId();
         let inactivePanel = activePanel === 1 ? 0 : 1;
         activate(outputContainer.querySelector(`[data-panel-i-d="${inactivePanel}"]`), elements.gapInput.value);
-        render(pullParallelSearch(customVerses), true, true);
+        render(pullParallelSearch(customVerses), true, "conSearch");
         activate(outputContainer.querySelector(`[data-panel-i-d="${activePanel}"]`), elements.gapInput.value);
       }
     }
   } else {
     let { results: refVerses, count: gap } = getRefResults();
     if (refVerses) {
-      render(refVerses, inDouble, true);
+      render(refVerses, inDouble, "reference");
     }
     elements.gapInput.value = gap;
     autoGapInputWidth(elements.gapInput);
@@ -3886,7 +3905,7 @@ function searchVerses() {
       if (debugMode) console.log("end searchVerses()");
       return;
     }
-    render(matches);
+    render(matches, false, "conSearch");
     if (debugMode) console.log("end searchVerses()");
     return;
   }
@@ -3909,7 +3928,11 @@ function searchVerses() {
     if (debugMode) console.log("end searchVerses()");
     return;
   }
-  render(matches);
+  if (!showContext) {
+    render(matches, false, "conSearch");
+  } else {
+    render(matches, false, "tabSearch");
+  }
 }
 
 function setReferenceRange({ b, c, v }) {
@@ -4948,7 +4971,7 @@ document.addEventListener("keydown", function (e) {
   let delta = null;
 
   // Special case for search view
-  if (currentRender === "search") {
+  if (currentRender !== "reference") {
     if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
       prevPage();
       e.preventDefault();
@@ -5230,7 +5253,7 @@ function buildPanels(count) {
 
     if (historyStacks[0][historyIndexes[0]].currentRender !== "reference" && !elements.linkSearch.checked) return;
     let secondPanel = select.value !== "none" ? 2 : 1;
-    if (historyStacks[secondPanel][historyIndexes[secondPanel]].currentRender !== "reference") return;
+    if (historyStacks[secondPanel][historyIndexes[secondPanel]].currentRender !== historyStacks[0][historyIndexes[0]].currentRender) return;
 
     const panels = outputContainer.querySelectorAll(".panel");
 
