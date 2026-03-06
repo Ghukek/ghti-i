@@ -838,3 +838,30 @@ select {
   border-radius: 4px;
   cursor: pointer;
 }
+
+.searchPopupLayout {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;   /* both columns same height */
+}
+
+.searchOptions {
+  flex: 1;
+}
+
+#bookFilter {
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  padding: 6px;
+  margin-top: 4px;
+}
+
+#bookFilterContainer summary {
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.bookButtons {
+  margin-top: 6px;
+}

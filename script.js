@@ -1166,51 +1166,86 @@ function populateVerses(bookIndex, chapterIndex, verseSelect) {
 // Populate book filter dropdown
 function populateBookFilter() {
   if (debugMode) console.log("populateBookFilter()");
+  
   const bookFilter = document.getElementById("bookFilter");
   if (!bookFilter) return;
-  
-  // Keep "All Books" option, add individual books
+
   bookNames.forEach((name, i) => {
     if (!baseData[i] || baseData[i].length === 0) return;
-    const option = document.createElement("option");
-    option.value = i;
-    option.textContent = name;
-    bookFilter.appendChild(option);
+
+    const label = document.createElement("label");
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = i;
+
+    checkbox.addEventListener("change", () => {
+      updateSelectAllButton();
+      saveSettings('save-id');
+    });
+
+    checkbox.classList.add("bookCheckbox");
+    checkbox.setAttribute("data-id", "");
+    checkbox.setAttribute("save-id", "");
+    checkbox.checked = true;
+
+    label.appendChild(checkbox);
+    label.appendChild(document.createTextNode(" " + name));
+
+    bookFilter.appendChild(label);
+    bookFilter.appendChild(document.createElement("br"));
   });
+}
+
+function updateSelectAllButton() {
+  const checkboxes = document.querySelectorAll("#bookFilter input[type='checkbox']");
+  const btn = document.querySelector("button[onclick='selectAllBooks()']");
+
+  if (!checkboxes.length || !btn) return;
+
+  const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+
+  btn.textContent = allChecked ? "Select None" : "Select All";
 }
 
 function selectAllBooks() {
   if (debugMode) console.log("selectAllBooks()");
-  const bookFilter = document.getElementById("bookFilter");
-  Array.from(bookFilter.options).forEach(opt => {
-    if (opt.value === "all") opt.selected = true;
-    else opt.selected = false;
+  
+  const checkboxes = document.querySelectorAll("#bookFilter input[type='checkbox']");
+  const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+
+  checkboxes.forEach(cb => {
+    cb.checked = !allChecked;
   });
+
+  updateSelectAllButton();
   saveSettings('save-id');
 }
 
 function selectGospels() {
   if (debugMode) console.log("selectGospels()");
-  const bookFilter = document.getElementById("bookFilter");
+
   const gospelIndices = [39, 40, 41, 42];
-  
-  Array.from(bookFilter.options).forEach(opt => {
-    if (opt.value === "all") opt.selected = false;
-    else opt.selected = gospelIndices.includes(parseInt(opt.value));
+
+  document.querySelectorAll(".bookCheckbox").forEach(cb => {
+    cb.checked = gospelIndices.includes(parseInt(cb.value));
   });
+
   saveSettings('save-id');
+  updateSelectAllButton();
 }
 
 function selectPaul() {
   if (debugMode) console.log("selectPaul()");
-  const bookFilter = document.getElementById("bookFilter");
-  const paulIndices = [44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56];
-  
-  Array.from(bookFilter.options).forEach(opt => {
-    if (opt.value === "all") opt.selected = false;
-    else opt.selected = paulIndices.includes(parseInt(opt.value));
+
+  const paulIndices = [44,45,46,47,48,49,50,51,52,53,54,55,56,57];
+
+  document.querySelectorAll(".bookCheckbox").forEach(cb => {
+    cb.checked = paulIndices.includes(parseInt(cb.value));
   });
+
   saveSettings('save-id');
+  updateSelectAllButton();
 }
 
 function initializeSelections() {
@@ -2000,7 +2035,7 @@ function render(customVerses = null, inDouble = false, isRef = false) {
               }
             }
 
-            return `<span class="popup-clickable" data-search=".${r}">${toGreek(r)}${separator}</span>`;
+            return `<span class="popup-clickable" data-search="*${r}">${toGreek(r)}${separator}</span>`;
           }).join('');
 
           row.appendChild(makePopupCell("roots", rootSpans, true));
@@ -2136,8 +2171,13 @@ function markWordSequence(allWords, latinWords) {
       const sw = latinWords[wi];
       if (/[α-ω]/i.test(sw) || lookInLookups(sw)) {
         tokens.forEach((t,i)=>{
-          if (matchesLookup(sw, lookupdb[t[0]]))
-            mark.add(i);
+          if (Number.isInteger(t[0])) {
+            if (matchesLookup(sw, lookupdb[t[0]]))
+              mark.add(i);
+          } else {
+            if (tokenMatchesWord(t, sw, exact))
+              mark.add(i);
+          }
         });
       } else {
         tokens.forEach((t,i)=>{
@@ -2157,7 +2197,7 @@ function markWordSequence(allWords, latinWords) {
         const sw = latinWords[k];
         const token = tokens[start + k];
 
-        const ok = /[α-ω]/i.test(sw) || lookInLookups(sw)
+        const ok = (/[α-ω]/i.test(sw) || lookInLookups(sw)) && Number.isInteger(token[0])
           ? matchesLookup(sw, lookupdb[token[0]])
           : tokenMatchesWord(token, sw, exact);
 
@@ -2186,7 +2226,7 @@ function markWordSequence(allWords, latinWords) {
         for (; idx < len; idx++) {
           const token = tokens[idx];
 
-          const match = /[α-ω]/i.test(sw) || lookInLookups(sw)
+          const match = (/[α-ω]/i.test(sw) || lookInLookups(sw)) && Number.isInteger(token[0])
             ? matchesLookup(sw, lookupdb[token[0]])
             : tokenMatchesWord(token, sw, exact);
 
@@ -2221,7 +2261,7 @@ function markWordSequence(allWords, latinWords) {
 
           const token = window[ti];
 
-          const match = /[α-ω]/i.test(sw) || lookInLookups(sw)
+          const match = (/[α-ω]/i.test(sw) || lookInLookups(sw)) && Number.isInteger(token[0])
             ? matchesLookup(sw, lookupdb[token[0]])
             : tokenMatchesWord(token, sw, exact);
 
@@ -2524,6 +2564,7 @@ function renderSingleVerse(container, book, chapter, verse, verseData, options, 
       if (typeof ident === "string" && /^[A-Za-z]+$/.test(ident)) {
         grk = ident; // ident is actually the greek word from LXX auto-fill.
       } else {
+        console.log(ident)
         grk = lookupdb[ident][0];
       }
       // ident is blank → collect ALL entries for this grk
@@ -2960,12 +3001,12 @@ function showPopup(e) {
 
     if (rootParts.length === 1 && rootParts[0] !== "&nbsp;") {
       // Single root – just make it clickable with no colon
-      popupContent += `<strong>Roots:</strong> <span class="popup-clickable" data-search=".${rootParts[0]}">${rootParts[0]}</span><br>`;
+      popupContent += `<strong>Roots:</strong> <span class="popup-clickable" data-search="*${rootParts[0]}">${rootParts[0]}</span><br>`;
     } else if (rootParts.length > 1) {
       // First root: add colon
-      const first = `<span class="popup-clickable" data-search=".${rootParts[0]}">${rootParts[0]}:</span>`;
+      const first = `<span class="popup-clickable" data-search="*${rootParts[0]}">${rootParts[0]}:</span>`;
       const rest = rootParts.slice(1).map(r =>
-        `<span class="popup-clickable" data-search=".${r}">${r}</span>`
+        `<span class="popup-clickable" data-search="*${r}">${r}</span>`
       ).join(', ');
 
       popupContent += `<strong>Roots:</strong> ${first} ${rest}<br>`;
@@ -3590,7 +3631,7 @@ function lookInLookups(term) {
   if (!isNaN(term)) return true;
 
   // Check if term starts with a period
-  if (term.startsWith('.')) return true;
+  if (term.startsWith('*')) return true;
 
   // Check if term starts with any of the prefixes
   if (Object.keys(posMap).some(posKey => term === posKey || term.startsWith(posKey + '-'))) {
@@ -3656,9 +3697,15 @@ function forEachVerse(callback) {
   const useBaseData = (select.value === "none" || getActivePanelId() === 0) ? true : false;
   let currData = useBaseData ? baseData : compData;
 
+  const selectedBooks = new Set(
+    [...document.querySelectorAll(".bookCheckbox:checked")]
+      .map(cb => parseInt(cb.value))
+  );
+
   if (debugMode) console.log("forEachVerse()");
   for (let b = 0; b < currData.length; b++) {
     if (!currData[b]) continue;
+    if (b > 38 &&!selectedBooks.has(b)) continue;
     for (let c = 0; c < currData[b].length; c++) {
       if (!currData[b][c]) continue;
       for (let v = 0; v < currData[b][c].length; v++) {
@@ -4405,7 +4452,7 @@ function matchesLookup(term, value) {
   if (!isNaN(term)) {
     if (value[2] === Number(term)) return result;
   }
-  if (term.startsWith('.')) {
+  if (term.startsWith('*')) {
     const cleanTerm = toLatin(term.slice(1))
     const rootParts = (value[3] || "")
       .split(",")

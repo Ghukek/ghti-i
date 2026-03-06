@@ -123,23 +123,32 @@
     <button class="buttonInDropdown" onclick="dumpAllSettings()">Reset ALL Settings</button>
   </div>
   <div id="searchPopup" class="popup menu-popup">
-    <label title="Any Search: Searches by an exact match rather than a partial match."><input type="checkbox" id="exactMatch" data-id save-id autocomplete="off"> Exact match</label><br>
-    <label title="Context or Phrase Search: Center the verse that contains the search results within the verse range."><input id="centerRange" type="checkbox" data-id save-id autocomplete="off"> Center ref</label><br>
-    <label title="Single-word Search: Show results in context according to the verse range."><input type="checkbox" id="showContext" data-id save-id autocomplete="off"> Show context</label><br>
-    <label title="Single-word Search: Only show unique word pairs."><input id="uniqueWords" type="checkbox" data-id save-id autocomplete="off"> Unique words</label><br>
-    <label title="Single-word Search: Only search using normalized English for broader results."><input id="normalized" type="checkbox" data-id save-id autocomplete="off"> De-punctuate</label><br>
-    <label title="Phrase Search: Only show words when they are in the requested order."><input id="ordered" type="checkbox" data-id save-id autocomplete="off"> Ordered</label><br>
-    <label title="Phrase Search: Only show words when they are adjacent."><input id="adjacent" type="checkbox" data-id save-id autocomplete="off"> Adjacent</label><br>
-    <label title="Will find combining morphology letters when checked."><input id="expandMorph" type="checkbox" data-id save-id checked autocomplete="off"> Expand Morph</label><br>
+    <div class="searchPopupLayout">
+      <!-- LEFT COLUMN -->
+      <div class="searchOptions">
+        <label title="Any Search: Searches by an exact match rather than a partial match."><input type="checkbox" id="exactMatch" data-id save-id autocomplete="off"> Exact match</label><br>
+        <label title="Context or Phrase Search: Center the verse that contains the search results within the verse range."><input id="centerRange" type="checkbox" data-id save-id autocomplete="off"> Center ref</label><br>
+        <label title="Single-word Search: Show results in context according to the verse range."><input type="checkbox" id="showContext" data-id save-id autocomplete="off"> Show context</label><br>
+        <label title="Single-word Search: Only show unique word pairs."><input id="uniqueWords" type="checkbox" data-id save-id autocomplete="off"> Unique words</label><br>
+        <label title="Single-word Search: Only search using normalized English for broader results."><input id="normalized" type="checkbox" data-id save-id autocomplete="off"> De-punctuate</label><br>
+        <label title="Phrase Search: Only show words when they are in the requested order."><input id="ordered" type="checkbox" data-id save-id autocomplete="off"> Ordered</label><br>
+        <label title="Phrase Search: Only show words when they are adjacent."><input id="adjacent" type="checkbox" data-id save-id autocomplete="off"> Adjacent</label><br>
+        <label title="Will find combining morphology letters when checked."><input id="expandMorph" type="checkbox" data-id save-id checked autocomplete="off"> Expand Morph</label><br>
     <!-- <button class="buttonInDropdown" onclick="saveSettings('save-id')">Save Search Settings</button><br> -->
     <!-- <button class="buttonInDropdown" onclick="resetSettings('save-id', true)">Reset Search Settings</button> -->
-    <label for="bookFilter" hidden>Limit to Books:</label>
-    <select id="bookFilter" multiple size="5" autocomplete="off" hidden>
-      <option value="all" selected>All Books</option>
-    </select><br hidden>
-    <button class="buttonInDropdown" onclick="selectAllBooks()" hidden>Select All</button>
-    <button class="buttonInDropdown" onclick="selectGospels()" hidden>Gospels</button>
-    <button class="buttonInDropdown" onclick="selectPaul()" hidden>Paul's Letters</button>
+      </div>
+      <!-- RIGHT COLUMN -->
+      <div class="bookColumn">
+        <label>Search Only:</label><br>
+        <button class="buttonInDropdown" onclick="selectAllBooks()">Select None</button><br>
+        <button class="buttonInDropdown" onclick="selectGospels()">Gospels</button>
+        <button class="buttonInDropdown" onclick="selectPaul()">Paul's Letters</button>
+        <details id="bookFilterContainer">
+          <summary>Show Books</summary>
+          <div id="bookFilter"></div>
+        </details>
+      </div>
+    </div>
   </div>
   <div id="panelPopup" class="popup menu-popup">
     <label title="Adds a second panel to the right of the first."><input type="checkbox" id="horizPanel" data-id global-setting onclick="setMode('horiz')" autocomplete="off"> 2nd Panel Right</label><br>
