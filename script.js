@@ -809,6 +809,12 @@ function setupEventListeners() {
     });
   });
 
+  [ "linkPanels", "linkScroll", "linkSearch"].forEach(id => {
+    elements[id].addEventListener("change", (e) => {
+      saveSettings();
+    });
+  });
+
   // Button (not in elements)
   document.getElementById("searchBtn")
     .addEventListener("click", searchChange);
@@ -2080,6 +2086,13 @@ function render(customVerses = null, inDouble = false, isRef = false) {
       if (searchState[currentPanelId].boundaries.length > 1 && currentRender === "search") {
         insertFwdBack(container)
       }
+      if (elements.linkSearch.checked && (elements.horizPanel.checked || elements.vertPanel.checked) && currentRender === "search" && !inDouble) { 
+        let activePanel = getActivePanelId();
+        let inactivePanel = activePanel === 1 ? 0 : 1;
+        activate(outputContainer.querySelector(`[data-panel-i-d="${inactivePanel}"]`), elements.gapInput.value);
+        render(pullParallelSearch(customVerses), true, true);
+        activate(outputContainer.querySelector(`[data-panel-i-d="${activePanel}"]`), elements.gapInput.value);
+      }
     }
   } else {
     let { results: refVerses, count: gap } = getRefResults();
@@ -2373,6 +2386,36 @@ function getRefResults(refData = null) {
   return { results, count };
 }
 
+function pullParallelSearch(results) {
+  const isFirstPanel = getActivePanelId() === 0;
+  const useBaseData = (select.value === "none" || isFirstPanel) ? true : false;
+  let currData = useBaseData ? baseData : compData;
+
+  const output = [];
+
+  for (const r of results) {
+
+    // preserve spacer rows
+    if (r.book === -1) {
+      output.push(r);
+      continue;
+    }
+
+    const verseData = currData?.[r.book]?.[r.chapter]?.[r.verse];
+
+    if (!verseData) continue;
+
+    output.push({
+      book: r.book,
+      chapter: r.chapter,
+      verse: r.verse,
+      verseData
+    });
+  }
+
+  return output;
+}
+
 function fixOverwideEng(container) {
   const containerWidth = container.clientWidth;
   const engSpans = container.querySelectorAll(".eng");
@@ -2554,7 +2597,7 @@ function renderSingleVerse(container, book, chapter, verse, verseData, options, 
     const altSearch = elements.altSearch.checked;
 
     let grk, pcode, strongs, roots, rEng, count;
-    let lookupData = [];
+    let lookupData = [];      
 
     if (Number.isInteger(ident) && ident !== -1 && !altSearch) { //Refactor moved this block earlier.
       // Normal case: lookup by ident
@@ -2564,7 +2607,6 @@ function renderSingleVerse(container, book, chapter, verse, verseData, options, 
       if (typeof ident === "string" && /^[A-Za-z]+$/.test(ident)) {
         grk = ident; // ident is actually the greek word from LXX auto-fill.
       } else {
-        console.log(ident)
         grk = lookupdb[ident][0];
       }
       // ident is blank → collect ALL entries for this grk
@@ -5186,7 +5228,7 @@ function buildPanels(count) {
   function syncScroll(source) {
     if (!elements.linkPanels.checked || !elements.linkScroll.checked) return;
 
-    if (historyStacks[0][historyIndexes[0]].currentRender !== "reference") return;
+    if (historyStacks[0][historyIndexes[0]].currentRender !== "reference" && !elements.linkSearch.checked) return;
     let secondPanel = select.value !== "none" ? 2 : 1;
     if (historyStacks[secondPanel][historyIndexes[secondPanel]].currentRender !== "reference") return;
 

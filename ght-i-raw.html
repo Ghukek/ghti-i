@@ -155,6 +155,7 @@
     <label title="Sets a second panel below the first."><input type="checkbox" id="vertPanel" data-id global-setting onclick="setMode('vert')" autocomplete="off"> 2nd Panel Below</label><br>
     <label title="Extend the height of the panels to 90% of the screen."><input type="checkbox" id="smallScreen" data-id global-setting onclick="setMode()" autocomplete="off"> Taller Panels</label><br>
     <label title="Link both panels. Useful for side-by-side reading."><input type="checkbox" id="linkPanels" data-id global-setting onclick="render()" autocomplete="off" data-id global-setting> Parallel Mode</label><br>
+    <label title="Link search."><input type="checkbox" id="linkSearch" data-id global-setting autocomplete="off" style="margin-left: 20px"> Parallel Search</label><br>
     <label title="Link panel scrolling."><input type="checkbox" id="linkScroll" data-id global-setting autocomplete="off" style="margin-left: 20px"> Scroll Link</label><br>
     <button id="swapPanelsBtn">Swap Panels</button><br>
     <label title="Select a second translation as a comparison." for="translationSelect">Parallel Translation:</label>
@@ -392,8 +393,8 @@
       <ul>
         <li>Garth Wiebe: Intense user-testing revealing countless bugs and small suggestions during development sprints.</li>
         <li>Ben Holt: Suggestion for arrow key support. Discussion prompting typeface selection, word padding slider, and word border selection. Suggestion for auto-save display settings. Other contributions that I didn't keep track of.</li>
-        <li>Paul Johnson: Reminder for multi-panel mode, suggestion for scroll link. (Pending: Suggestion for search limiting.)</li>
-        <li>Parth Sahay: Implementation of alternate translation abbreviation marker. (Pending: Implementation of search limiting.)</li>
+        <li>Paul Johnson: Reminder for multi-panel mode, suggestion for scroll link. Suggestion for search limiting.</li>
+        <li>Parth Sahay: Implementation of alternate translation abbreviation marker. First draft of search limiting.</li>
       </ul>
       <h3><img src="public_domain_icon_200x200.png" alt="No copyright" height="20" width="20"> Public Domain</h3>
       <p>The GHT Study Tool consisting of the entirety of this HTML file is granted to the public domain. Where the mere declaration of public domain is not sufficient, <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a> applies.</p>
