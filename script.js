@@ -1272,14 +1272,14 @@ function selectPaul() {
   updateSelectAllButton();
 }
 
-function initializeSelections() {
+function initializeSelections(userInit = false) {
   if (debugMode) console.log("initializeSelections()");
-  populateBookDropdowns();
+  if (!userInit)populateBookDropdowns();
 
-  const range = getUrlRange();
+  const range = userInit ? null : getUrlRange();
 
-  const allSettings = loadAllSettings();
-  const settings = allSettings.panels[0] || {};
+  const allSettings = userInit ? null : loadAllSettings();
+  const settings = userInit ? null : allSettings.panels[0] || {};
 
   if (settings) {
     loadSettings();
@@ -1378,12 +1378,19 @@ function initializeSelections() {
   }
 
   // Load search params if present
-  applyUrlSearch();
+  if (!userInit) {
+    applyUrlSearch();
   // Initialize panel ref/search based on saved/random data.
-  populateBookFilter();
+    populateBookFilter();
+  }
   //for (let i = 0; i < maxPanels; i++) {
   //  storePanelState(i);
   //}
+}
+
+function randomVerse() {
+  initializeSelections(true);
+  render();
 }
 
 // Helper function to pad numbers for url encoding
@@ -3243,6 +3250,55 @@ function dumpAllSettings() {
   location.reload();
 }
 
+function toggleLockReference() {
+  let panelId = getActivePanelId();
+  if (panelId === 1 && select.value !== "none") {
+    panelId = 2;
+  }
+
+  const data = loadAllSettings();
+  const panelSettings = data.panels[panelId] || {};
+
+  if (panelHasRefSettings(panelSettings)) {
+    resetSettings("ref-id", true);
+  } else {
+    saveSettings("ref-id");
+  }
+
+  updateLockButton();
+}
+
+function updateLockButton() {
+  let panelId = getActivePanelId();
+  if (panelId === 1 && select.value !== "none") {
+    panelId = 2;
+  }
+
+  const data = loadAllSettings();
+  const panelSettings = data.panels[panelId] || {};
+
+  const btn = document.getElementById("lockReferenceBtn");
+  if (!btn) return;
+
+  if (panelHasRefSettings(panelSettings)) {
+    btn.textContent = "Unlock Reference";
+  } else {
+    btn.textContent = "Lock Reference";
+  }
+}
+
+function panelHasRefSettings(panelSettings) {
+  for (const [key, el] of Object.entries(elements)) {
+    if (!el) continue;
+    if (!el.hasAttribute("ref-id")) continue;
+
+    if (panelSettings[key] !== undefined) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function saveSettings(targetAttr = null, firstLoad = false) {
   if (debugMode) console.log("saveSettings()");
   // Load existing settings so we only update parts
@@ -3372,6 +3428,13 @@ function loadSettings(pageload=false, global=true) {
 
     // Apply headgroup collapse states
     setCollapsedHeadGroups(panelSettings.headGroupsCollapsed || []);
+  }
+
+  if (panelId === 0) {
+    document.getElementById("lockReferenceBtn").style.display = "flex";
+    updateLockButton();
+  } else {
+    document.getElementById("lockReferenceBtn").style.display = "none";
   }
 }
 

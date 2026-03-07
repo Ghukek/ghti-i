@@ -165,8 +165,8 @@
     <select id="translationSelect" autocomplete="off">
       <option value="none" selected>None</option>
       <option value="web">World English Bible 2020</option>
-      <option value="mbsb">M/BSB 2023</option>
-      <option value="kjvna">KJV vs NA28</option>
+      <option value="mbsb">MSB vs. BSB 2023</option>
+      <option value="kjvna">KJV 1769 vs. KJV/NA28 2024</option>
       <option value="kjv">King James 1769</option>
       <option value="kjv1611">King James 1611</option>
       <option value="gen">Geneva 1599</option>
@@ -218,8 +218,8 @@
       <select id="verseEnd" data-id ref-id hidden></select>
     </span>
     <span class="head-group2">
-      <button onclick="saveSettings('ref-id')">Save Reference</button>
-      <button onclick="resetSettings('ref-id', true)">Reset Reference</button>
+      <button onclick="randomVerse()">Random Reference</button>
+      <button id="lockReferenceBtn" onclick="toggleLockReference()">Lock Reference</button>
     </span>
     <span class="collapse-bar" onclick="toggleHeadGroups('headWrapper')" title="Collapse / Expand controls"></span>
   </span>
@@ -309,7 +309,7 @@
       <li>14 Jan 26: Major update adding panels and significant auxiliary UI improvements.</li>
       <li>12 Feb 26: Major update adding secondary translations and several bug fixes and UI improvements.</li>
       <li>25 Feb 26: Minor update fixing several bugs and making UI/UX improvements.</li>
-      <li>xx Mar 26: Minor update re-routing some back-end logic and implementing search limiting.</li>
+      <li>xx Mar 26: Major update re-routing some back-end logic and implementing search limiting, parallel search, comma-separated reference calls, and two "versus" translations.</li>
       <li>COMING SOON: What's next? Check <a href="/ght-i-raw.html">the development version</a> to see what I'm working on.</li>
       </ul>
       <h3>Reference Selection:</h3>
@@ -317,7 +317,8 @@
       <p>You may manually adjust how many verses to show at a time by changing the number in between "Show" and "verses" when "Fixed" is enabled.</p>
       <p>When "Fixed" is unchecked, you select the start and end references manually.</p>
       <p>The 'Load' button will load the current reference selection. This is only necessary when the user has searched and wants to go back to the current selection.</p>
-      <p>You can save the current reference selection to be persistant using the "Save Reference" button. This overrides the random generation on page load.</p>
+      <p>The "Random Reference" button will send a random verse block to the active panel.</p>
+      <p>You can save the current reference selection to be persistant using the "Lock Reference" button. This only overrides the random generation on page load.</p>
       <h3>Settings</h3>
       <p>The settings in the "Display" popup allow you to customize your user experience. The search settings will be discussed in the "Searching" section.</p>
       <p>The options within the 'Show on Screen' box are a list of word properties that can be shown on screen. Any properties left unchecked will be shown in a popup window for each word. The options are:</p>
@@ -373,6 +374,9 @@
       <h3>Panels:</h3>
       <p>Use the settings in the "Panels" popup to enable a second panel. By default, the second panel will work exactly like the first panel. All of your display and search settings are panel-specific. That is, you can have English showing on one, and Greek on the other. Clicking to search will send the search results to the active panel, not necessarily the panel you are clicking on. You can activate a panel by clicking any blank space (usually toward the end of a line or near a verse reference marker).</p>
       <p>"Taller Panels" will make it so that the panels can nearly fill the screen. By default, the page will be entirely visible on your browser window. Enabling "taller panels" allows you to scroll down to hide UI. This is useful for viewing on smaller screens.</p>
+      <p>"Parallel Reference" links the two panels together such that a reference (Book/Chapter/Verse) call will load in both panels simultaneously. Useful for Alternate Translation mode explained below or using side-by-side rather than interlinear English/Greek since each panel can have its own display settings. Note: When only this is active, searches are still sent only to the active panel.</p>
+      <p>"Parallel Search" operates with the same principle as parallel reference. However, it does <b>not</b> search both panels with the same term. Rather, when a search finds a list of verses to display, the same verses will be shown in the alternate panel. This can be useful for comparing how different translations translate a given word or phrase. Since this only works for verse-based search results, single-word search results will still only be sent to the active panel.</p>
+      <p>"Scroll Link" links the scrolling of the two panels together.</p>
       <p>"Swap Panels" will take the content and settings of each panel and swap their places.</p>
       <h3>Alternate Translations:</h3>
       <p>Found in the "Panels" popup. These only show up in the second panel, thus "Swap Panels" is disabled when an alternate translation is selected.</p>
