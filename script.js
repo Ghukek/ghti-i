@@ -4167,7 +4167,7 @@ function tokenMatchesWord(tokenVal, searchWord, exact = false) {
     return searchWord.includes(tokenVal[0]);
   } else {
     let lowerToken = tokenVal[1].toLowerCase();
-    return termMatch(searchWord, lowerToken)
+    return termMatch(searchWord.toLowerCase(), lowerToken)
   }
 }
 
@@ -5609,6 +5609,11 @@ async function loadTranslation(selected) {
   }
   
   if (!elements.horizPanel.checked && !elements.vertPanel.checked) {
+    if (!historyStacks[1]) { // Edge case where second panel has never been used in this session.
+      historyStacks[1] = [];
+      historyStacks[1][0] = historyStacks[0][historyIndexes[0]]; // copy current state to second panel stack
+      historyIndexes[1] = 0;
+    }
     elements.horizPanel.checked = true;
     setMode("init");
   }
