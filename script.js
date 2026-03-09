@@ -546,7 +546,7 @@ function loadState(panelID, increment, fromChangeTranslation = false) {
 
     if (el.type === "checkbox") el.checked = state[id];
     else {
-      if (panelID !== 0 && elements.linkPanels.checked) {
+      if (panelID !== 0 && (elements.linkPanels.checked || elements.linkSearch.checked)) {
         if (id === "bookStart" || id === "chapterStart" || id === "verseStart" || id === "bookEnd" || id === "chapterEnd" || id === "verseEnd" || id === "gapInput") {
           // skip loading reference histories into non-reference panel when panels are linked.
           return;
