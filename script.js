@@ -2116,7 +2116,7 @@ function render(customVerses = null, inDouble = false, curRen = "reference") {
         let activePanel = getActivePanelId();
         let inactivePanel = activePanel === 1 ? 0 : 1;
         activate(outputContainer.querySelector(`[data-panel-i-d="${inactivePanel}"]`), elements.gapInput.value);
-        render(pullParallelSearch(customVerses), true, "conSearch");
+        render(pullParallelSearch(customVerses), true, "conSearchParallel");
         activate(outputContainer.querySelector(`[data-panel-i-d="${activePanel}"]`), elements.gapInput.value);
       }
     }
@@ -5530,12 +5530,14 @@ function changeAltTranslation() {
     elements.showRoots.checked = false;
     saveSettings(null, true);
     
-    render();
+    if (historyStacks[1][historyIndexes[1]]['currentRender'] === "conSearchParallel") loadState(0, 0, true);
+    else render();
     if (activePanel === 0) {
       activate(outputContainer.querySelector(`[data-panel-i-d="0"]`));
     }
   } else {
-    loadState(1, 0, true);
+    if (historyStacks[2][historyIndexes[2]]['currentRender'] === "conSearchParallel") loadState(0, 0, true);
+    else loadState(1, 0, true);
   }
 }
 
