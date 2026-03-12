@@ -275,11 +275,12 @@ function loadBaseJson() {
     setupEventListeners();
     setFontSize();
     setMode("init");
-    if (currentRender !== "reference") {
+    // Redundant. Now done in setMode.
+/*     if (currentRender !== "reference") {
       searchVerses();
     } else {
       render();
-    }
+    } */
     // getCount is depreciated now that the NT is complete. If we do the OT, we will re-enable it.
     // getCount();
     return;
@@ -321,11 +322,12 @@ function loadBaseJson() {
     setupEventListeners();
     setFontSize();
     setMode("init");
-    if (currentRender !== "reference") {
+    // Redundant. Now done in setMode.
+/*     if (currentRender !== "reference") {
       searchVerses();
     } else {
       render();
-    }
+    } */
     // getCount is depreciated now that the NT is complete. If we do the OT, we will re-enable it.
     // getCount();
   }).catch(err => {
@@ -1272,6 +1274,8 @@ function selectPaul() {
   updateSelectAllButton();
 }
 
+urlSearch = false;
+
 function initializeSelections(userInit = false) {
   if (debugMode) console.log("initializeSelections()");
   if (!userInit)populateBookDropdowns();
@@ -1382,6 +1386,7 @@ function initializeSelections(userInit = false) {
     applyUrlSearch();
   // Initialize panel ref/search based on saved/random data.
     populateBookFilter();
+    urlSearch = true;
   }
   //for (let i = 0; i < maxPanels; i++) {
   //  storePanelState(i);
@@ -1665,7 +1670,7 @@ const lookupUnderscore = { // Run reportnonadjacent.py to update this
   "[not]": [""]
 };
 function processUnderscoreWord(eng, grk, lookupUnderscore) {
-  if (debugMode) console.log("processUnderscoreWord()");
+  if (debugModeExtra) console.log("processUnderscoreWord()");
   if (!eng.includes("_")) return eng;
 
   const parts = eng.toLowerCase().split("_");
@@ -2191,7 +2196,7 @@ function highlightCustomVerses(customVerses, searchTerms) {
 }
 
 function markWordSequence(allWords, latinWords) {
-  if (debugMode) console.log("markWordSequence()");
+  if (debugModeExtra) console.log("markWordSequence()");
   const ordered = elements.ordered.checked;
   const adjacent = elements.adjacent.checked;
   let exact = elements.exactMatch.checked;
@@ -2532,7 +2537,7 @@ function createClickableSpan(className, text, wordEl, altsearch=null, berean=nul
 }
 
 function renderSingleVerse(container, book, chapter, verse, verseData, options, verseElin = null, isFirstPanel) {
-  if (debugMode) console.log("renderSingleVerse()");
+  if (debugModeExtra) console.log("renderSingleVerse()");
   const { showGreek, showEnglish, showPcode, showStrongs, showRoots } = getDisplayOptions();
   const newlineAfterVerse = elements.newlineAfterVerse.checked;
   const {
@@ -5376,8 +5381,10 @@ function buildPanels(count) {
     const panel = outputContainer.querySelector(`[data-panel-i-d="${i}"]`);
     if (panel) {
       activate(panel);
-      if (historyIndexes[i] === -1) onOptionsChange();
-      else loadState(i, historyIndexes[i])
+      if (historyIndexes[i] === -1) {
+        if (!urlSearch || i === 0) onOptionsChange();
+        else render();
+      } else loadState(i, historyIndexes[i])
       saveSettings();
     }
   }

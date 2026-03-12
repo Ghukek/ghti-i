@@ -865,3 +865,11 @@ select {
 .bookButtons {
   margin-top: 6px;
 }
+
+input[type="checkbox"] {
+  accent-color: #885334;
+}
+
+input[type="range"] {
+  accent-color: #885334;
+}
