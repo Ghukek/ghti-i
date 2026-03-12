@@ -3432,9 +3432,11 @@ function loadSettings(pageload=false, global=true) {
 
   if (panelId === 0) {
     document.getElementById("lockReferenceBtn").style.display = "flex";
+    updatePanelHeight()
     updateLockButton();
   } else {
     document.getElementById("lockReferenceBtn").style.display = "none";
+    updatePanelHeight()
   }
 }
 
