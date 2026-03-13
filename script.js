@@ -1,7 +1,7 @@
 // GHT Study Tool by Nathan P. Wiebe. Javascript content. Granted to the Public Domain.
 
 const debugMode = true;
-const debugModeExtra = false;
+const debugModeExtra = true;
 
 const greekToUnicode = {
   a: 'α', b: 'β', g: 'γ', d: 'δ',
@@ -793,6 +793,7 @@ function setupEventListeners() {
   elements.enforceGap.addEventListener("change", () => {
     elements.gapInput.disabled = !elements.enforceGap.checked;
     lastChanged = "start";
+    saveSettings();
     adjustSelections();
   });
 
@@ -1867,7 +1868,6 @@ let centerFromSearch = false;
 let currentRender = "reference"; // used to track current rendering mode, changed in render()
 function render(customVerses = null, inDouble = false, curRen = "reference") {
   if (debugMode) console.log("render()");
-  console.log(curRen);
   currentRender = curRen;
   if (elements.linkPanels.checked && (elements.horizPanel.checked || elements.vertPanel.checked) && currentRender === "reference" && !inDouble) { 
     let activePanel = getActivePanelId();
