@@ -829,7 +829,7 @@ function setupEventListeners() {
     });
   });
 
-  [ "linkPanels", "linkScroll", "linkSearch"].forEach(id => {
+  [ "linkPanels", "linkScrollRef", "linkScrollSearch", "linkSearch"].forEach(id => {
     elements[id].addEventListener("change", (e) => {
       saveSettings();
     });
@@ -5319,11 +5319,11 @@ function buildPanels(count) {
   }
 
   function syncScroll(source) {
-    if (!elements.linkPanels.checked || !elements.linkScroll.checked) return;
-
-    if (historyStacks[0][historyIndexes[0]].currentRender !== "reference" && !elements.linkSearch.checked) return;
+    if (historyStacks[0][historyIndexes[0]].currentRender === "tabSearch") return
+    if (historyStacks[0][historyIndexes[0]].currentRender === "reference" && (!elements.linkScrollRef.checked || !elements.linkPanels.checked)) return;
+    if (historyStacks[0][historyIndexes[0]].currentRender === "conSearch" && (!elements.linkScrollSearch.checked || !elements.linkSearch.checked)) return;
     let secondPanel = select.value !== "none" ? 2 : 1;
-    if (historyStacks[secondPanel][historyIndexes[secondPanel]].currentRender !== historyStacks[0][historyIndexes[0]].currentRender) return;
+    if (historyStacks[secondPanel][historyIndexes[secondPanel]].currentRender === "tabSearch") return;
 
     const panels = outputContainer.querySelectorAll(".panel");
 
