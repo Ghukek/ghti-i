@@ -3956,7 +3956,7 @@ function searchVerses() {
     return;
   }
 
-  if (normalized) {
+  if (normalized && !tryParseReference(searchTerm)) {
     searchTerm = searchTerm.replace(/,|\.|\(|\)|:|"|’|‘|`|”|“|'|;|–|—|\?|\[\?\]|!/g, '');
     elements.searchInput.value = searchTerm
   }
