@@ -1,7 +1,7 @@
 // GHT Study Tool by Nathan P. Wiebe. Javascript content. Granted to the Public Domain.
 
 const debugMode = true;
-const debugModeExtra = true;
+const debugModeExtra = false;
 
 const greekToUnicode = {
   a: 'α', b: 'β', g: 'γ', d: 'δ',
@@ -1032,6 +1032,7 @@ function updateDisplay() {
     buildChapters(prefix, b);
     buildVerses(prefix, b, c);
   });
+  updatePanelHeight()
 }
 
 let chapColWidth = 0;
@@ -1396,6 +1397,7 @@ function initializeSelections(userInit = false) {
 
 function randomVerse() {
   initializeSelections(true);
+  updatePanelHeight()
   render();
 }
 
@@ -3889,6 +3891,7 @@ function refSearch(searchTerm) {
     const allResults = [];
     let count = 0;
     let truncated = false;
+    console.log(ref)
 
     for (const r of ref) {
       const { results: result, count: gap } = getRefResults(r);
@@ -3916,8 +3919,16 @@ function refSearch(searchTerm) {
     if (allResults.at(-1)?.verseData === "bar") allResults.pop();
     if (allResults.at(0)?.verseData === "bar") allResults.shift();
 
-    render(allResults);
-    return true;
+    if (ref.length === 1) {
+      elements.gapInput.value = count;
+      setReferenceRange(ref[0].start);
+      updateDisplay();
+      render();
+      return true;
+    } else {
+      render(allResults);
+      return true;
+    }
   }
 
   // SINGLE verse (original behavior unchanged)

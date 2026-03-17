@@ -1,7 +1,6 @@
 const CACHE_NAME = 'OfflineGHT-v1';
 const FILES_TO_CACHE = [
   'ght-i.html',   // the only page that changes
-  'pwa.html',
   'icon-192.png',
   'grkkeyboard.png'
 ];

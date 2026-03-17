@@ -83,40 +83,45 @@ const isSamsung = /SamsungBrowser/i.test(navigator.userAgent);
 if (isSamsung) document.getElementById('manual-install').style.display = 'block';
 
 const isDesktop = !/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-if (isDesktop) {
-  document.getElementById('downloadBtn').style.display = 'inline-block';
-}
 
-// Show install button when browser triggers beforeinstallprompt
+// Listen for beforeinstallprompt (desktop PWA install)
 window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault(); // Prevent Chrome's mini prompt
+  e.preventDefault();
   deferredPrompt = e;
   document.getElementById('installBtn').style.display = 'inline-block';
+  document.getElementById('downloadBtn').style.display = 'none';
 });
 
-// Handle install button click
+// Fallback: if no install prompt, show download button after delay
+window.addEventListener('DOMContentLoaded', () => {
+  if (isDesktop) {
+    setTimeout(() => {
+      if (!deferredPrompt) {
+        document.getElementById('downloadBtn').style.display = 'inline-block';
+      }
+    }, 3000);
+  }
+});
+
+// Install button click: use prompt if available, otherwise fallback to download
 document.getElementById('installBtn').addEventListener('click', async () => {
   if (deferredPrompt) {
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     console.log('User response to install:', outcome);
     deferredPrompt = null;
+  } else {
+    // fallback for browsers that don’t support beforeinstallprompt
+    document.getElementById('downloadBtn').click();
   }
 });
 
-// Open the main app directly
+// Open main app directly
 document.getElementById('openBtn').addEventListener('click', () => {
   window.location.href = 'ght-i.html';
 });
 
-// Register service worker
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js')
-    .then(() => console.log('Service worker registered'))
-    .catch(err => console.log('SW registration failed:', err));
-}
-
-// Handle download button click
+// Download button click: save HTML file
 document.getElementById('downloadBtn').addEventListener('click', () => {
   fetch('ght-i.html')
     .then(response => response.blob())
@@ -132,6 +137,13 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
     })
     .catch(err => alert('Failed to download file: ' + err));
 });
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js')
+    .then(() => console.log('Service worker registered'))
+    .catch(err => console.log('SW registration failed:', err));
+}
 </script>
 </body>
 </html>
