@@ -3698,6 +3698,92 @@ function matchMorphTag(pattern, tag) {
   return true;
 }
 
+const bookAlias = {
+  // Pentateuch
+  gen: "Gen", genesis: "Gen",
+  ex: "Ex", exodus: "Ex",
+  lev: "Lev", leviticus: "Lev",
+  num: "Num", numbers: "Num",
+  deut: "Deut", deuteronomy: "Deut",
+
+  // Historical
+  josh: "Josh", joshua: "Josh",
+  judg: "Judg", judges: "Judg",
+  ruth: "Ruth",
+  "1sam": "1Sam", "1samuel": "1Sam", sam: "1Sam", samuel: "1Sam",
+  "2sam": "2Sam", "2samuel": "2Sam",
+  "1ki": "1Ki", "1kings": "1Ki", ki: "1Ki", kings: "1Ki",
+  "2ki": "2Ki", "2kings": "2Ki",
+  "1chr": "1Chr", "1chronicles": "1Chr", chr: "1Chr", chronicles: "1Chr",
+  "2chr": "2Chr", "2chronicles": "2Chr",
+  ezra: "Ezra", ezrah: "Ezra",
+  neh: "Neh", nehemiah: "Neh",
+  esth: "Esth", esther: "Esth",
+
+  // Wisdom
+  job: "Job",
+  pslm: "Pslm", psalm: "Pslm", psalms: "Pslm", ps: "Pslm",
+  prvb: "Prvb", prov: "Prvb", proverbs: "Prvb",
+  eccl: "Eccl", ecclesiastes: "Eccl",
+  song: "Song", songofsolomon: "Song", songofsongs: "Song", canticles: "Song",
+
+  // Major Prophets
+  is: "Is", isaiah: "Is",
+  jer: "Jer", jeremiah: "Jer",
+  lam: "Lam", lamentations: "Lam",
+  ezek: "Ezek", ezekiel: "Ezek",
+  dan: "Dan", daniel: "Dan",
+
+  // Minor Prophets
+  hos: "Hos", hosea: "Hos",
+  joel: "Joel",
+  amos: "Amos",
+  obad: "Obad", obadiah: "Obad",
+  jonah: "Jonah",
+  micah: "Micah",
+  nahum: "Nahum",
+  habak: "Habak", habakkuk: "Habak",
+  zeph: "Zeph", zephaniah: "Zeph",
+  hagg: "Hagg", haggai: "Hagg",
+  zech: "Zech", zechariah: "Zech",
+  mal: "Mal", malachi: "Mal",
+
+  // Gospels + Acts
+  matt: "Matt", matthew: "Matt",
+  mark: "Mark",
+  luke: "Luke",
+  john: "John",
+  acts: "Acts",
+
+  // Pauline
+  rom: "Rom", romans: "Rom",
+  "1cor": "1Cor", "1corinthians": "1Cor", cor: "1Cor", corinthians: "1Cor",
+  "2cor": "2Cor", "2corinthians": "2Cor",
+  gal: "Gal", galatians: "Gal",
+  eph: "Eph", ephesians: "Eph",
+  phil: "Phil", philippians: "Phil",
+  col: "Col", colossians: "Col",
+  "1thes": "1Thes", "1thessalonians": "1Thes", thes: "1Thes", thessalonians: "1Thes",
+  "2thes": "2Thes", "2thessalonians": "2Thes",
+  "1tim": "1Tim", "1timothy": "1Tim", tim: "1Tim", timothy: "1Tim",
+  "2tim": "2Tim", "2timothy": "2Tim",
+  tit: "Tit", titus: "Tit",
+  phm: "Phm", philemon: "Phm",
+
+  // General Epistles
+  heb: "Heb", hebrews: "Heb",
+  james: "James",
+  "1pet": "1Pet", "1peter": "1Pet", pet: "1Pet", peter: "1Pet",
+  "2pet": "2Pet", "2peter": "2Pet",
+  "1john": "1John", john: "1John",
+  "2john": "2John",
+  "3john": "3John",
+  jude: "Jude",
+
+  // Apocalypse
+  rev: "Rev", revelation: "Rev"
+};
+
 // Helper: parse reference strings into book/chapter/verse indices
 function tryParseReference(refString) {
   if (debugMode) console.log("tryParseReference()");
@@ -3707,12 +3793,20 @@ function tryParseReference(refString) {
   const results = [];
 
   for (const ref of refs) {
-    const match = ref.match(/^(\S+)\s+(\d+):(\d+)(?:-(?:(\d+):)?(\d+))?$/);
+    const match = ref.match(/^(.+?)\s+(\d+):(\d+)(?:-(?:(\d+):)?(\d+))?$/);
     if (!match) return null;
 
     const [, bookName, c1, v1, c2, v2] = match;
 
-    const b = bookAbb.findIndex(bk => bk.toLowerCase() === bookName.toLowerCase());
+    let key = bookName.toLowerCase();
+
+    // contract "1 cor" → "1cor"
+    key = key.replace(/^(\d+)\s+/, "$1");
+
+    const canonical = bookAlias[key];
+    if (!canonical) return null;
+
+    const b = bookAbb.findIndex(bk => bk === canonical);
     if (b === -1) return null;
 
     const start = {
