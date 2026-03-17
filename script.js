@@ -3438,7 +3438,7 @@ function loadSettings(pageload=false, global=true) {
   }
 
   if (panelId === 0) {
-    document.getElementById("lockReferenceBtn").style.display = "flex";
+    document.getElementById("lockReferenceBtn").style.display = "inline-block";
     updatePanelHeight()
     updateLockButton();
   } else {
