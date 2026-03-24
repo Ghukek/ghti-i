@@ -31,7 +31,7 @@ self.addEventListener('fetch', event => {
   const requestURL = new URL(event.request.url);
 
   // 🔑 Ignore cross-origin requests (Cloudflare, etc.)
-  if (url.origin !== self.location.origin) {
+  if (requestURL.origin !== self.location.origin) {
     return;
   }
 

@@ -4089,7 +4089,7 @@ function searchVerses() {
   let inLookups = lookInLookups(searchTerm);
 
   // Case: Latin, not in lookups, and not normalized → raw term search
-  if (!/[α-ω]/i.test(searchTerm) && !inLookups && (!normalized || altVersion) && (!uniqueWords || altVersion)) {
+  if (!/[α-ω]/i.test(searchTerm) && (!inLookups || altVersion) && (!normalized || altVersion) && (!uniqueWords || altVersion)) {
     handleWordMatches(searchTerm, matches);
   } else {
     handleLookupMatches(searchTerm, matches);
@@ -4247,7 +4247,30 @@ function handleWordMatches(term, matches) {
       if (normalized) {
         word = word.replace(/,|\.|\(|\)|:|"|’|‘|`|”|“|'|;|–|—|\?|\[\?\]|!/g, '');
       }
-      let isMatch = exact ? word === searchTerm : word.includes(searchTerm);
+      let isMatch = false;
+
+      // OR logic (|)
+      if (searchTerm.includes('|')) {
+        const terms = searchTerm.split('|').map(t => t.trim());
+
+        isMatch = terms.some(t =>
+          exact ? word === t : word.includes(t)
+        );
+      }
+
+      // AND logic (+)
+      else if (searchTerm.includes('+')) {
+        const terms = searchTerm.split('+').map(t => t.trim());
+
+        isMatch = terms.every(t =>
+          exact ? word === t : word.includes(t)
+        );
+      }
+
+      // Normal single-term search
+      else {
+        isMatch = exact ? word === searchTerm : word.includes(searchTerm);
+      }
       if (!isMatch) return;
 
       // ---------- UNIQUE WORD MODE ----------
@@ -4298,7 +4321,6 @@ function handleWordMatches(term, matches) {
   if (searchState[currentPanelId].boundaries.length <= searchState[currentPanelId].page + 1 && count > endIndex) {
     searchState[currentPanelId].boundaries.push(endIndex);
   }
-
 }
 
 function nextPage() {
