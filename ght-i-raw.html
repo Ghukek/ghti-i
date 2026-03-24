@@ -15,12 +15,12 @@
   <meta name="description" content="The GHT Study Tool is a companion application to Garth's Hyper-Literal Translation, providing interlinear, reverse interlinear, grammar and lexical data, and a feature-rich search function.">
   <script>
     const script = document.createElement("script");
-    script.src = "script.js?t=" + Date.now(); // prevent cache
+    script.src = "script.js" //?t=" + Date.now(); // prevent cache
     script.defer = true;
     document.head.appendChild(script);
     const style = document.createElement("link");
     style.rel = "stylesheet";
-    style.href = "styles.css?t=" + Date.now(); // bust cache
+    style.href = "styles.css" //?t=" + Date.now(); // bust cache
     document.head.appendChild(style);
   </script>
 </head>

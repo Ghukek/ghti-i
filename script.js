@@ -213,7 +213,7 @@ async function updateToolLastUpdated() {
 
   if (!lastModifiedUTC) {
     // fallback: fetch last-modified headers
-    const files = ["ght-i.html", "styles.css", "script.js"];
+    const files = ["ght-i-raw.html", "styles.css", "script.js"];
     const dates = await Promise.all(files.map(f => getLastModified(f)));
     const latest = dates.filter(d => d).sort((a, b) => b - a)[0];
     lastModifiedUTC = latest ? latest.toUTCString() : null;
@@ -269,7 +269,7 @@ function loadBaseJson() {
       });
       el.textContent = `${formatted} ${time}`;
     }
-
+ 
     initializeSelections();
     initPickers();
     setupEventListeners();
@@ -286,8 +286,8 @@ function loadBaseJson() {
     return;
   }
 
-  const baseUrl = dbName + '?t=' + Date.now();
-  const lookupUrl = lookupsName + '?t=' + Date.now();
+  const baseUrl = dbName //+ '?t=' + Date.now();
+  const lookupUrl = lookupsName //+ '?t=' + Date.now();
 
   Promise.all([
     fetch(baseUrl).then(res => {
@@ -3781,7 +3781,7 @@ const bookAlias = {
   jude: "Jude",
 
   // Apocalypse
-  rev: "Rev", revelation: "Rev"
+  rev: "Rev", revelation: "Rev", revelations: "Rev"
 };
 
 // Helper: parse reference strings into book/chapter/verse indices

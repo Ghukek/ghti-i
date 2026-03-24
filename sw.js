@@ -30,6 +30,11 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const requestURL = new URL(event.request.url);
 
+  // 🔑 Ignore cross-origin requests (Cloudflare, etc.)
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
   if (requestURL.pathname.endsWith('ght-i.html')) {
     // Cache-then-network: serve cached version immediately, update in background
     event.respondWith(
