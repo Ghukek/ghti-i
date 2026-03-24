@@ -1293,8 +1293,6 @@ function initializeSelections(userInit = false) {
 
   if (range?.gapInput > 0) {
     elements.gapInput.value = range.gapInput;
-  } else if (settings?.gapInput > 0) {
-    elements.gapInput.value = settings.gapInput;
   } else {
     elements.gapInput.value = Math.floor(Math.random() * (20 - 2 + 1)) + 2; // random 2–20
   }
