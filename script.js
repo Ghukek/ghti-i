@@ -1,7 +1,7 @@
 // GHT Study Tool by Nathan P. Wiebe. Javascript content. Granted to the Public Domain.
 
 const debugMode = true;
-const debugModeExtra = false;
+const debugModeExtra = true;
 
 const greekToUnicode = {
   a: 'α', b: 'β', g: 'γ', d: 'δ',
@@ -2418,6 +2418,7 @@ function getRefResults(refData = null) {
 }
 
 function pullParallelSearch(results) {
+  if (debugMode) console.log("pullParallelSearch()");
   const isFirstPanel = getActivePanelId() === 0;
   const useBaseData = (select.value === "none" || isFirstPanel) ? true : false;
   let currData = useBaseData ? baseData : compData;
@@ -2432,9 +2433,9 @@ function pullParallelSearch(results) {
       continue;
     }
 
-    const verseData = currData?.[r.book]?.[r.chapter]?.[r.verse];
+    let verseData = currData?.[r.book]?.[r.chapter]?.[r.verse];
 
-    if (!verseData) continue;
+    if (!verseData) verseData = [];
 
     output.push({
       book: r.book,
