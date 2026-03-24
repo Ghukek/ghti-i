@@ -3930,7 +3930,7 @@ function forEachVerse(callback) {
   if (debugMode) console.log("forEachVerse()");
   for (let b = 0; b < currData.length; b++) {
     if (!currData[b]) continue;
-    if (b > 38 &&!selectedBooks.has(b)) continue;
+    if (!selectedBooks.has(b)) continue;
     for (let c = 0; c < currData[b].length; c++) {
       if (!currData[b][c]) continue;
       for (let v = 0; v < currData[b][c].length; v++) {
