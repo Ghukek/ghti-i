@@ -236,6 +236,67 @@ async function updateToolLastUpdated() {
   }
 }
 
+if ('serviceWorker' in navigator) {
+
+  let refreshing = false;
+
+  // 🔥 Reload when a new SW takes control
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!refreshing) {
+      refreshing = true;
+      window.location.reload();
+    }
+  });
+
+  // 🔥 Listen for update notifications from SW
+  navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data.type === 'UPDATE_AVAILABLE') {
+      window.location.reload();
+    }
+  });
+
+  navigator.serviceWorker.register('/service-worker.js').then(reg => {
+
+    // 🔥 Force activate waiting SW
+    if (reg.waiting) {
+      reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+    }
+
+    reg.addEventListener('updatefound', () => {
+      const newWorker = reg.installing;
+
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          newWorker.postMessage({ type: 'SKIP_WAITING' });
+        }
+      });
+    });
+
+    // 🔥 Now safely trigger update check
+    if (navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({ type: 'CHECK_FOR_UPDATE' });
+    }
+  });
+}
+
+function forceRefresh() {
+  const url = new URL(window.location.href);
+  url.searchParams.set('time', Date.now());
+  window.location.href = url.toString();
+}
+
+// Run on page load
+(function cleanURL() {
+  const url = new URL(window.location.href);
+
+  if (url.searchParams.has('time')) {
+    url.searchParams.delete('time');
+
+    // Replace URL without reloading
+    window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+  }
+})();
+
 // Run it
 updateToolLastUpdated();
 let compData;
@@ -3226,7 +3287,7 @@ function showPopupTouchEnd(e) {
     }
   }
 }
-
+ 
 // Start Settings Code
 
 const SETTINGS_KEY = "userSettingsV4";
@@ -3253,7 +3314,10 @@ function dumpAllSettings() {
   const baseUrl = window.location.origin + window.location.pathname;
   const newUrl = `${baseUrl}`;
   window.history.replaceState(null, "", newUrl);
-  location.reload();
+  const url = new URL(window.location.href);
+  url.searchParams.set('time', Date.now());
+
+  window.location.href = url.toString();
 }
 
 function toggleLockReference() {

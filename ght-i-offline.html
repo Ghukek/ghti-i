@@ -118,7 +118,7 @@ document.getElementById('installBtn').addEventListener('click', async () => {
 
 // Open main app directly
 document.getElementById('openBtn').addEventListener('click', () => {
-  window.location.href = 'ght-i.html';
+  window.location.href = 'ght-i.html?fresh=' + Date.now();
 });
 
 // Download button click: save HTML file
@@ -140,7 +140,7 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
 
 // Register service worker
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js')
+  navigator.serviceWorker.register('/sw.js?v=2')
     .then(() => console.log('Service worker registered'))
     .catch(err => console.log('SW registration failed:', err));
 }
