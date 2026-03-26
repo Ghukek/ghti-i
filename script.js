@@ -483,17 +483,19 @@ function saveState(empty = false) {
     : (historyIndexes[panelID] = -1);
 
   let override = false;
-  if (panelID !== 0 && elements.linkPanels.checked && stack[index]) { // When link panels is active, only update history stack on second panel if search.
+  // REDUNDANT; now using restoring flag. Remove this code once confirmed.
+  if (panelID === 4 && elements.linkPanels.checked && stack[index]) { // When link panels is active, only update history stack on second panel if search.
     if (stack[index]['currentRender'] === "reference") { // Nested if-statement needed due to the initial load of 3rd panel having no valid [index]['currentRender'] value, but that will never be a search since a translation load is always reference-call. If this were in the first if-statement, it would cause an error on alternate translation load.
       override = true;
     }
   }
 
-  if (panelID !== 0 && elements.linkSearch.checked && stack[index]) { // When link search is active, only update history stack on second panel if table search.
+  if (panelID === 4 && elements.linkSearch.checked && stack[index]) { // When link search is active, only update history stack on second panel if table search.
     if (stack[index]['currentRender'] === "conSearch") { 
       override = true;
     }
   }
+  // END REDUNDANT
 
   const state = {};
   Object.keys(elements).forEach(id => {
@@ -571,7 +573,8 @@ function loadState(panelID, increment, fromChangeTranslation = false) {
   }
   let state = stack[index];
 
-  if (panelID !== 0 && elements.linkPanels.checked && state) { // When link panels is active, do not load any reference histories.
+  // REDUNDANT; now using restoring flag. Remove this code once confirmed.
+  if (panelID === 4 && elements.linkPanels.checked && state) { // When link panels is active, do not load any reference histories.
     if (elements.linkSearch.checked) {
       while (state['currentRender'] !== "tabSearch" && index > 0 && increment !== 0 && index < stack.length - 1) {
         index += increment;
@@ -602,6 +605,7 @@ function loadState(panelID, increment, fromChangeTranslation = false) {
       }
     }
   }
+  //END REDUNDANT
 
   Object.keys(state).forEach(id => {
     const el = elements[id];
@@ -609,12 +613,14 @@ function loadState(panelID, increment, fromChangeTranslation = false) {
 
     if (el.type === "checkbox") el.checked = state[id];
     else {
-      if (panelID !== 0 && (elements.linkPanels.checked || elements.linkSearch.checked)) {
+      // REDUNDANT; now using restoring flag. Remove this code once confirmed.
+      if (panelID === 4 && (elements.linkPanels.checked || elements.linkSearch.checked)) {
         if (id === "bookStart" || id === "chapterStart" || id === "verseStart" || id === "bookEnd" || id === "chapterEnd" || id === "verseEnd" || id === "gapInput") {
           // skip loading reference histories into non-reference panel when panels are linked.
           return;
         }
       }
+      // END REDUNDANT
       if (el.id === "chapterStart") populateChapters(state.bookStart, el);
       if (el.id === "chapterEnd") populateChapters(state.bookEnd, el);
       if (el.id === "verseStart") populateVerses(state.bookStart, state.chapterStart, el);
@@ -1930,7 +1936,7 @@ let currentRender = "reference"; // used to track current rendering mode, change
 function render(customVerses = null, inDouble = false, curRen = "reference") {
   if (debugMode) console.log("render()");
   currentRender = curRen;
-  if (elements.linkPanels.checked && (elements.horizPanel.checked || elements.vertPanel.checked) && currentRender === "reference" && !inDouble) { 
+  if (elements.linkPanels.checked && (elements.horizPanel.checked || elements.vertPanel.checked) && currentRender === "reference" && !inDouble && !restoring) { 
     let activePanel = getActivePanelId();
     let inactivePanel = activePanel === 1 ? 0 : 1;
     render(customVerses, true, "reference");
@@ -2178,7 +2184,7 @@ function render(customVerses = null, inDouble = false, curRen = "reference") {
       if (searchState[currentPanelId].boundaries.length > 1 && currentRender === "conSearch") {
         insertFwdBack(container)
       }
-      if (elements.linkSearch.checked && (elements.horizPanel.checked || elements.vertPanel.checked) && currentRender === "conSearch" && !inDouble) { 
+      if (elements.linkSearch.checked && (elements.horizPanel.checked || elements.vertPanel.checked) && currentRender === "conSearch" && !inDouble && !restoring) { 
         let activePanel = getActivePanelId();
         let inactivePanel = activePanel === 1 ? 0 : 1;
         activate(outputContainer.querySelector(`[data-panel-i-d="${inactivePanel}"]`), elements.gapInput.value);
@@ -4105,6 +4111,13 @@ function searchVerses() {
   const normalized = elements.normalized.checked;
   const container = document.getElementById('output');
   container.innerHTML = ''; // clear existing output
+
+  console.log(historyStacks[currentPanelId][historyIndexes[currentPanelId]].currentRender)
+  if (restoring && historyStacks[currentPanelId][historyIndexes[currentPanelId]].currentRender === "conSearchParallel") {
+    container.innerHTML = '<p>Failed to load parallel search results.</p>';
+    if (debugMode) console.log("end searchVerses()");
+    return;
+  }
 
   if (!searchTerm) {
     container.innerHTML = '<p>Please enter a search term.</p>';
