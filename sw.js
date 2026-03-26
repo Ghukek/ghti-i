@@ -32,10 +32,6 @@ self.addEventListener('activate', event => {
 
 // Fetch event: cache-then-network for ght-i.html, otherwise cache-first
 self.addEventListener('fetch', event => {
-  if (self.registration.active) {
-    self.registration.unregister();
-  }
-
   const request = event.request;
   const url = new URL(request.url);
 

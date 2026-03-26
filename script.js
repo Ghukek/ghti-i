@@ -1,7 +1,7 @@
 // GHT Study Tool by Nathan P. Wiebe. Javascript content. Granted to the Public Domain.
 
 const debugMode = true;
-const debugModeExtra = true;
+const debugModeExtra = false;
 
 const greekToUnicode = {
   a: 'α', b: 'β', g: 'γ', d: 'δ',
@@ -255,7 +255,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('/service-worker.js').then(reg => {
+  navigator.serviceWorker.register('/sw.js').then(reg => {
 
     // 🔥 Force activate waiting SW
     if (reg.waiting) {
@@ -3838,7 +3838,7 @@ const bookAlias = {
   james: "James",
   "1pet": "1Pet", "1peter": "1Pet", pet: "1Pet", peter: "1Pet",
   "2pet": "2Pet", "2peter": "2Pet",
-  "1john": "1John", john: "1John",
+  "1john": "1John", 
   "2john": "2John",
   "3john": "3John",
   jude: "Jude",
@@ -5662,7 +5662,7 @@ document.addEventListener("DOMContentLoaded", updatePanelHeight);
 // Alternate Translation mode
 
 const translations = {
-  kjv: "alt/KJV1769.json" ,
+  kjv: "alt/KJV1769.json",
   gen: "alt/Gen1599.json",
   tyn: "alt/Tyn1534.json",
   wyc: "alt/Wycliffe.json",
@@ -5674,6 +5674,7 @@ const translations = {
   kjv1611: "alt/KJV1611.json",
   mbsb: "alt/MBSB.json",
   kjvna: "alt/KJVNA.json",
+  vulgate: "alt/VULGATE.json",
 };
 
 const translationsx = {
@@ -5689,6 +5690,7 @@ const translationsx = {
   kjv1611: "alt/KJV1611x.json",
   mbsb: "alt/MBSB.json",
   kjvna: "alt/KJVNA.json",
+  vulgate: "alt/VULGATEx.json",
 };
 
 // Mapping of translation values to their abbreviations
@@ -5704,7 +5706,8 @@ const translationAbbrevs = {
   "wyc": "Wycliffe",
   "wycsp": "Wycliffe (sp)",
   "mbsb": "M/BSB",
-  "kjvna": "KJV/NA28"
+  "kjvna": "KJV/NA28",
+  "vulgate": "Vulgate",
 };
 
 const select = document.getElementById("translationSelect");

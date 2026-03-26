@@ -1318,13 +1318,13 @@ let lookupdb = [["kai","Conj",2532,"kai","and",8232],["o","Art-NMS",3588,"o","th
 
 // Compile-time timestamps
 document.getElementById("data_last_updated")?.setAttribute("data-compile-lastmod", "Tue, 24 Mar 2026 23:20:19 GMT");
-document.getElementById("tool_last_updated")?.setAttribute("data-compile-lastmod", "Wed, 25 Mar 2026 11:47:03 GMT");
+document.getElementById("tool_last_updated")?.setAttribute("data-compile-lastmod", "Wed, 25 Mar 2026 20:41:54 GMT");
 
 // App code
 // GHT Study Tool by Nathan P. Wiebe. Javascript content. Granted to the Public Domain.
 
 const debugMode = false;
-const debugModeExtra = true;
+const debugModeExtra = false;
 
 const greekToUnicode = {
   a: 'α', b: 'β', g: 'γ', d: 'δ',
@@ -1578,7 +1578,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  navigator.serviceWorker.register('/service-worker.js').then(reg => {
+  navigator.serviceWorker.register('/sw.js').then(reg => {
 
     // 🔥 Force activate waiting SW
     if (reg.waiting) {
