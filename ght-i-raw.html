@@ -310,13 +310,9 @@
       <p>Refer to <a href="https://www.youtube.com/playlist?list=PL7QiqIl3Qy8ivF2sALVY3Acs-esSwELxL">this Youtube playlist</a> for a series of tutorials helping you get started.</p>
       <h3>Recent Changes:</h3>
       <ul>
-      <li>14 Jan 26: Major update adding panels and significant auxiliary UI improvements.</li>
-      <li>12 Feb 26: Major update adding secondary translations and several bug fixes and UI improvements.</li>
-      <li>25 Feb 26: Minor update fixing several bugs and making UI/UX improvements.</li>
-      <li>12 Mar 26: Major update re-routing some back-end logic and implementing search limiting, parallel search, comma-separated reference calls, and two "versus" translations.</li>
-      <li>15 Mar 26: Minor update fixing several bugs and making UI/UX improvements.</li>
-      <li>xx xxx 26: TBD</li>
-      <li>Want to know what's next? Check <a href="/ght-i-raw.html">the development version</a> to see what I'm working on.</li>
+        <li>15 Mar 26: Minor update fixing several bugs and making UI/UX improvements.</li>
+        <li>xx xxx 26: TBD</li>
+        <li>Want to know what's next? Check <a href="/ght-i-raw.html">the development version</a> or the <a href="https://github.com/Ghukek/ght-i">GitHub repository</a> to see what I'm working on.</li>
       </ul>
       <h3>Reference Selection:</h3>
       <p>Select your start or end book, chapter, and verse from "Start Ref" and "End Ref". </p>
@@ -393,7 +389,9 @@
       <p>See <a href='jsonsource.html' target='_blank' rel='noopener noreferrer'>here</a> for a list of sources.</p>
       <h3>Sharing:</h3>
       <p>The tool can save the current reference selection to the URL so that the user can share a passage via link. Or, the user can share a particular search result. See the 'URL Save' buttons.</p>
-      <p>Alternatively, the user may copy the text on screen. Use the 'Copy Text' buttons to copy all Greek or English text to your clipboard when you are verse-display mode.</p>
+      <p>Alternatively, since the OS-level select/copy functionality is broken by the html elements needed for interlinear display; to copy on-screen text, use the 'Copy Text' buttons to copy all Greek or English text to your clipboard when you are verse-display mode.</p>
+      <p>The table copy button will copy a word list in a comma separated value format.</p>
+      <p>All buttons in this category will be based on the currently active panel.</p>
       <h3>Navigation:</h3>
       <p>The back and forward buttons at the top left of the page bring you to your last render state. It stores up to 100 renders in history.</p>
       <p>The navigation buttons at the bottom of the page are relatively self-explanatory. They bring you forward or back by one chapter, page, or verse. A page is defined as the number of verses currently rendered.</p>
@@ -405,6 +403,23 @@
         <li>Ben Holt: Suggestion for arrow key support. Discussion prompting typeface selection, word padding slider, and word border selection. Suggestion for auto-save display settings. Other contributions that I didn't keep track of.</li>
         <li>Paul Johnson: Reminder for multi-panel mode, suggestion for scroll link. Suggestion for search limiting.</li>
         <li>Parth Sahay: Implementation of alternate translation abbreviation marker. First draft of search limiting.</li>
+      </ul>
+      <h3>Expanded Change Log:</h3>
+      <ul>
+        <li>22 Aug: Added ability to combine attribute search by using + or | symbols.</li>
+        <li>23 Aug: Added pagination for large searches to reduce render time.</li>
+        <li>26 Oct: Added an option to show all known parsing options and translations for a given Greek word.</li>
+        <li>31 Oct: Added per-term exact match (=) ability and per-term negation (~).</li>
+        <li>31 Oct: Added a search query builder, to provide a more user-friendly search experience.</li>
+        <li>25 Dec: Added collapsing UX elements in consideration of mobile browser screen real estate. Added page navigation buttons that navigate according to the current verse range.</li>
+        <li>27 Dec: Added navigation using arrow keys.</li>
+        <li>1 Jan: Added typeface selection toggle, swapped to sliders for font size, added padding slider, added word border toggle.</li>
+        <li>4 Jan: Added fancy reference selection box.</li>
+        <li>5 Jan: Minor UI clean-up and performance bug fixes. Added majuscule mode.</li>
+        <li>14 Jan 26: Major update adding panels and significant auxiliary UI improvements.</li>
+        <li>12 Feb 26: Major update adding secondary translations and several bug fixes and UI improvements.</li>
+        <li>25 Feb 26: Minor update fixing several bugs and making UI/UX improvements.</li>
+        <li>12 Mar 26: Major update re-routing some back-end logic and implementing search limiting, parallel search, comma-separated reference calls, and two "versus" translations.</li>
       </ul>
       <h3><img src="public_domain_icon_200x200.png" alt="No copyright" height="20" width="20"> Public Domain</h3>
       <p>The GHT Study Tool consisting of the entirety of this HTML file is granted to the public domain. Where the mere declaration of public domain is not sufficient, <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a> applies.</p>
