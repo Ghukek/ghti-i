@@ -5900,6 +5900,7 @@ function showDisclaimer() {
     //document.getElementById("swapPanelsBtn").disabled = true;
     const abbrevElement = document.getElementById("translationAbbrev");
     abbrevElement.style.display = "block";
+    document.getElementById("engCopy").innerHTML = select.value === 'vulgate' ? "Latin" : "English";
     await loadTranslation(select.value);
   };
 
@@ -5921,6 +5922,7 @@ select.addEventListener("change", async function() {
     changeAltTranslation();
     //document.getElementById("swapPanelsBtn").disabled = false;
     abbrevElement.style.display = "none";
+    document.getElementById("engCopy").innerHTML = "English";
     return;
   }
 
@@ -5931,6 +5933,7 @@ select.addEventListener("change", async function() {
     // Modal already shown, just load the translation
     //document.getElementById("swapPanelsBtn").disabled = true;
     abbrevElement.style.display = "block";
+    document.getElementById("engCopy").innerHTML = select.value === 'vulgate' ? "Latin" : "English";
     await loadTranslation(selected);
   }
 });
@@ -5981,6 +5984,7 @@ async function loadTranslation(selected) {
       showToast("Failed to load translation. Falling back to GHT.");
       select.value = "none";
       document.getElementById("translationAbbrev").style.display = "none";
+      document.getElementById("engCopy").innerHTML = "English";
       changeAltTranslation();
       return;
     }
