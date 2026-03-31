@@ -1879,6 +1879,7 @@ function processUnderscoreWord(eng, grk, lookupUnderscore) {
 
 function processFormatting(input) {
   if (debugMode) console.log("processFormatting()");
+  if (currentPanelId === 2) return input;
   const reducedStyle = 'font-size: var(--font-size-reduced); color: rgb(50, 100, 50);';
 
   function smallText(str) {
