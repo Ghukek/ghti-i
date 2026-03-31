@@ -2300,7 +2300,6 @@ function render(customVerses = null, inDouble = false, curRen = "reference") {
           verseEl,
           isFirstPanel
         ));
-        console.log(passUnderscore, countContext, verseEl)
       });
       if (verseEl) container.appendChild(verseEl);
       if (searchState[currentPanelId].boundaries.length > 1 && currentRender === "conSearch") {
@@ -4912,9 +4911,11 @@ function matchesLookup(term, value) {
 
   // Check if term is a number
   if (!isNaN(term)) {
+    if (currentPanelId === 2) return false;
     if (value[2] === Number(term)) return result;
   }
   if (term.startsWith('*')) {
+    if (currentPanelId === 2) return false;
     const cleanTerm = toLatin(term.slice(1))
     const rootParts = (value[3] || "")
       .split(",")
