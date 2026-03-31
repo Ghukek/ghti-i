@@ -142,6 +142,25 @@ body {
   left: 1rem;
 }
 
+.parallelMode {
+  position: fixed;
+  top: 2.2rem;
+  right: 1rem;
+  display: flex;
+  gap: 0;
+  z-index: 1000;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.parallelMode div {
+  border: 1px solid var(--brown);
+  padding: 2px 1px;
+  border-radius: 2px;
+  background: var(--darker-tan);
+  display: none;
+}
+
 #translationAbbrev {
   font-weight: bold;
   background-color: var(--dark-tan);

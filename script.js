@@ -336,6 +336,7 @@ function loadBaseJson() {
     setupEventListeners();
     setFontSize();
     setMode("init");
+    toggleLink("none");
     // Redundant. Now done in setMode.
 /*     if (currentRender !== "reference") {
       searchVerses();
@@ -383,6 +384,7 @@ function loadBaseJson() {
     setupEventListeners();
     setFontSize();
     setMode("init");
+    toggleLink("none");
     // Redundant. Now done in setMode.
 /*     if (currentRender !== "reference") {
       searchVerses();
@@ -1856,6 +1858,7 @@ const lookupUnderscore = { // Run reportnonadjacent.py to update this
   "you": ["ymas"],
   "[not]": [""]
 };
+
 function processUnderscoreWord(eng, grk, lookupUnderscore) {
   if (debugModeExtra) console.log("processUnderscoreWord()");
   if (!eng.includes("_")) return eng;
@@ -1878,7 +1881,7 @@ function processUnderscoreWord(eng, grk, lookupUnderscore) {
 }
 
 function processFormatting(input) {
-  if (debugMode) console.log("processFormatting()");
+  if (debugModeExtra) console.log("processFormatting()");
   if (currentPanelId === 2) return input;
   const reducedStyle = 'font-size: var(--font-size-reduced); color: rgb(50, 100, 50);';
 
@@ -5797,6 +5800,16 @@ function updatePanelHeight() {
 window.addEventListener("resize", updatePanelHeight);
 window.addEventListener("orientationchange", updatePanelHeight);
 document.addEventListener("DOMContentLoaded", updatePanelHeight);
+
+function toggleLink(type) {
+  if (debugMode) console.log("toggleLink()");
+  document.getElementById("parallelModeActive").style.display = (elements.linkPanels.checked || elements.linkSearch.checked) ? "block" : "none";
+  document.getElementById("parallelRef").style.display = (elements.linkPanels.checked) ? "block" : "none";
+  document.getElementById("parallelSearch").style.display = (elements.linkSearch.checked) ? "block" : "none";
+  if (type === "ref") render();
+  else if (type === "search") onOptionsChange();
+  else return;
+}
 
 // Alternate Translation mode
 

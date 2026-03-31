@@ -155,9 +155,9 @@
     <label title="Adds a second panel to the right of the first."><input type="checkbox" id="horizPanel" data-id global-setting onclick="setMode('horiz')" autocomplete="off"> 2nd Panel Right</label><br>
     <label title="Sets a second panel below the first."><input type="checkbox" id="vertPanel" data-id global-setting onclick="setMode('vert')" autocomplete="off"> 2nd Panel Below</label><br>
     <label title="Extend the height of the panels to 90% of the screen."><input type="checkbox" id="smallScreen" data-id global-setting onclick="setMode()" autocomplete="off"> Taller Panels</label><br>
-    <label title="Link both panels. Useful for side-by-side reading."><input type="checkbox" id="linkPanels" data-id global-setting onclick="render()" autocomplete="off" data-id global-setting> Parallel Reference</label><br>
+    <label title="Link both panels. Useful for side-by-side reading."><input type="checkbox" id="linkPanels" data-id global-setting onclick="toggleLink('ref')" autocomplete="off" data-id global-setting> Parallel Reference</label><br>
     <label title="Link panel scrolling."><input type="checkbox" id="linkScrollRef" data-id global-setting autocomplete="off" style="margin-left: 20px"> Link Scroll</label><br>
-    <label title="Link search." onclick="onOptionsChange()"><input type="checkbox" id="linkSearch" data-id global-setting autocomplete="off"> Parallel Search</label><br>
+    <label title="Link search." onclick="toggleLink('search')"><input type="checkbox" id="linkSearch" data-id global-setting autocomplete="off"> Parallel Search</label><br>
     <label title="Link panel scrolling."><input type="checkbox" id="linkScrollSearch" data-id global-setting autocomplete="off" style="margin-left: 20px"> Link Scroll</label><br>
     <button id="swapPanelsBtn">Swap Panels</button><br>
     <label title="Select a second translation as a comparison." for="translationSelect">Parallel Translation:</label>
@@ -300,6 +300,11 @@
     <button id="historyBackBtnRight" data-history-back="1" title="Undo last change" class="inactive">← Back</button>
     <div id="translationAbbrev" style="display: none;"></div>
     <button id="historyForwardBtnRight" data-history-forward="1" title="Redo last change" class="inactive">Fwd →</button>
+  </div>
+  <div class="parallelMode">
+    <div id="parallelModeActive">Parallel:</div>
+    <div id="parallelRef">&nbsp;Reference</div>
+    <div id="parallelSearch">&nbsp;Search</div>
   </div>
   <div id="helpPopup" class="popup help-popup" style="display:none;">
     <div class="help-content">
