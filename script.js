@@ -442,6 +442,7 @@ const onOptionsChange = () => {
 let restoring = false;
 const historyStacks = [];   // array of stacks, one per panel
 const historyIndexes = [];  // array of indexes, one per panel
+let historyPairs = [];
 
 function initHistoryForPanels(count) {
   for (let i = 0; i < count; i++) {
@@ -465,7 +466,6 @@ let lastEmpty = [false, false, false]; // If we are on a failed search, use a te
 
 function saveState(empty = false) {
   if (debugMode) console.log("saveState()")
-  if (restoring) return;
 
   const activePanel = document.getElementById("output");
   if (!activePanel) return;
@@ -481,6 +481,27 @@ function saveState(empty = false) {
   let index = historyIndexes[panelID] !== undefined && historyIndexes[panelID] !== null
     ? historyIndexes[panelID]
     : (historyIndexes[panelID] = -1);
+
+  if (restoring && Number.isInteger(index)) return;
+
+  // -------------------------------
+  // Determine if we are using linking
+  let targetRender = historyStacks[panelID][index]?.currentRender;
+  let useLinking =
+    (elements.linkPanels.checked && targetRender === "reference") ||
+    (elements.linkSearch.checked &&
+      (targetRender === "conSearch" || targetRender === "conSearchParallel"));
+
+  if (!useLinking) {
+    // Find any row in historyPairs matching the current panelID column
+    const matchIndex = historyPairs.findIndex(p => p[panelID] === index);
+
+    if (matchIndex !== -1) {
+      // Remove the matched row and all future rows (forward invalidation)
+      historyPairs.splice(matchIndex);
+    }
+    console.log(historyPairs);
+  }
 
   let override = false;
   // REDUNDANT; now using restoring flag. Remove this code once confirmed.
@@ -509,6 +530,26 @@ function saveState(empty = false) {
 
   state['centerScroll'] = centerFromSearch;
   state['currentRender'] = currentRender;
+  
+  // 1. Compute notPanelID
+  let notPanelID;
+  if (panelID === 1 || panelID === 2) {
+    notPanelID = 0;
+  } else {
+    notPanelID = (select.value === "none") ? 1 : 2;
+  }
+
+  // 2. Assign altSearchInput
+  const otherStack = historyStacks[notPanelID];
+  const idx = Number(historyIndexes[notPanelID]);
+
+  state['altSearchInput'] =
+    (state['currentRender'] === "conSearchParallel" &&
+    otherStack &&
+    idx != null &&
+    otherStack[idx] !== undefined)
+      ? otherStack[idx].searchInput
+      : null;
 
   // Do not save if identical to current
   if (index >= 0 && statesEqual(stack[index], state)) {
@@ -713,13 +754,13 @@ document.addEventListener("keydown", (e) => {
   // Undo: Ctrl+Z / Cmd+Z
   if (key === "z" && !e.shiftKey) {
     e.preventDefault();
-    historyBack(getActivePanelId());
+    historyNav(getActivePanelId(), -1);
   }
 
   // Redo: Ctrl+Shift+Z / Cmd+Shift+Z
   if (key === "z" && e.shiftKey) {
     e.preventDefault();
-    historyForward(getActivePanelId());
+    historyNav(getActivePanelId(), 1);
   }
 });
 
@@ -739,16 +780,101 @@ function updateHistoryButtons(panelID) {
   fwdBtn.classList.toggle("inactive", index >= stack.length - 1);
 }
 
-function historyBack(panelID) {
-  if (debugMode) console.log("historyBack()")
-  loadState(panelID, -1);
-  updateHistoryButtons(panelID);
+function pushToPair() {
+  if (debugMode) console.log("pushToPair()");
+
+  if (restoring) return; // Don't modify pairs while restoring state
+
+  let secondPanel = select.value === "none" ? 1 : 2;
+  let firstPanelIndex = historyIndexes[0];
+  let secondPanelIndex = historyIndexes[secondPanel];
+
+  // Build new pair
+  let newPair = [firstPanelIndex, -1, -1];
+  newPair[secondPanel] = secondPanelIndex;
+
+  // Filter historyPairs: only remove a pair if any slot > new pair in the same slot
+  historyPairs = historyPairs.filter(p => {
+    for (let i = 0; i < 3; i++) {
+      if (p[i] !== -1 && newPair[i] !== -1 && p[i] > newPair[i]) {
+        return false; // remove
+      }
+    }
+    return true; // keep
+  });
+
+  // Prevent exact duplicate
+  const exists = historyPairs.some(p =>
+    p.length === newPair.length && p.every((v,i) => v === newPair[i])
+  );
+
+  if (!exists) historyPairs.push(newPair);
+
+  if (debugMode) console.log("historyPairs:", historyPairs);
 }
 
-function historyForward(panelID) {
-  if (debugMode) console.log("historyForward()")
-  loadState(panelID, 1);
+function historyNav(panelID, direction) {
+  if (debugMode) console.log("historyNav()");
+
+  let secondPanel = select.value === "none" ? 1 : 2;
+  
+  // Map UI panel → historyPairs column
+  let pairColumn = panelID === 0 ? 0 : secondPanel;
+  let notPanelID = panelID === 0 ? secondPanel : 0;
+
+  // Determine target index/render (always based on actual panelID)
+  let targetIndex = historyIndexes[pairColumn] + direction;
+  let targetState = historyStacks[pairColumn][targetIndex];
+  let targetRender = targetState?.currentRender;
+
+  // Determine whether linking logic should apply
+  let useLinking =
+    (elements.linkPanels.checked && targetRender === "reference") ||
+    (elements.linkSearch.checked &&
+      (targetRender === "conSearch" || targetRender === "conSearchParallel"));
+
+  if (!useLinking) {
+    loadState(panelID, direction);
+    updateHistoryButtons(panelID);
+    return;
+  }
+
+  // Find valid pair row
+  let pairRow = historyPairs.find(
+    row => row[pairColumn] === targetIndex && row[notPanelID] !== -1
+  );
+
+  console.log(pairRow)
+
+  if (!pairRow && targetRender !== "tabSearch") {
+    showToast("Histories misaligned, using a temporary placeholder");
+    loadState(panelID, direction);
+    updateHistoryButtons(panelID);
+    return;
+  }
+
+  let pairedIndex = pairRow[notPanelID];
+  console.log(pairedIndex)
+
+  // Handle behavior based on render type
+  if (targetRender === "conSearchParallel") {
+    // Relative sync
+    let diff = pairedIndex - historyIndexes[notPanelID];
+
+    // Advance current panel first
+    historyIndexes[pairColumn] += direction;
+
+    // Move the other panel relatively
+    loadState(notPanelID, diff);
+  } else {
+    // Absolute sync (reference / conSearch)
+    historyIndexes[notPanelID] = pairedIndex;   
+    loadState(panelID, direction);
+  }
+
   updateHistoryButtons(panelID);
+  updateHistoryButtons(notPanelID);
+  console.log(historyPairs)
 }
 
 function handleGreekInput(e) {
@@ -965,10 +1091,10 @@ function setupEventListeners() {
     greekHelpPopup.hidden = true;
   });
 
-  document.getElementById("historyBackBtnRight").addEventListener("click", () => historyBack(1));
-  document.getElementById("historyForwardBtnRight").addEventListener("click", () => historyForward(1));
-  document.getElementById("historyBackBtnLeft").addEventListener("click", () => historyBack(0));
-  document.getElementById("historyForwardBtnLeft").addEventListener("click", () => historyForward(0));
+  document.getElementById("historyBackBtnRight").addEventListener("click", () => historyNav(1, -1));
+  document.getElementById("historyForwardBtnRight").addEventListener("click", () => historyNav(1, 1));
+  document.getElementById("historyBackBtnLeft").addEventListener("click", () => historyNav(0, -1));
+  document.getElementById("historyForwardBtnLeft").addEventListener("click", () => historyNav(0, 1));
 }
 
 // Fancy Reference Selector Box code.
@@ -1903,6 +2029,7 @@ function getDisplayOptions() {
 
 function insertFwdBack(container) {
   if (debugMode) console.log("insertFwdBack()");
+  if (currentRender === "conSearchParallel") return; // No pagination on secondary panel.
   const backBtn = document.createElement("button");
   if (searchState[currentPanelId].page === 0) {
     backBtn.id = "greyFwdBackBtn";
@@ -1936,13 +2063,14 @@ let currentRender = "reference"; // used to track current rendering mode, change
 function render(customVerses = null, inDouble = false, curRen = "reference") {
   if (debugMode) console.log("render()");
   currentRender = curRen;
-  if (elements.linkPanels.checked && (elements.horizPanel.checked || elements.vertPanel.checked) && currentRender === "reference" && !inDouble && !restoring) { 
+  if (elements.linkPanels.checked && (elements.horizPanel.checked || elements.vertPanel.checked) && currentRender === "reference" && !inDouble) { 
     let activePanel = getActivePanelId();
     let inactivePanel = activePanel === 1 ? 0 : 1;
     render(customVerses, true, "reference");
     activate(outputContainer.querySelector(`[data-panel-i-d="${inactivePanel}"]`), elements.gapInput.value);
     render(customVerses, true, "reference");
     activate(outputContainer.querySelector(`[data-panel-i-d="${activePanel}"]`), elements.gapInput.value);
+    pushToPair();
     if (debugMode) console.log("end render()");
     return
   }
@@ -2184,12 +2312,13 @@ function render(customVerses = null, inDouble = false, curRen = "reference") {
       if (searchState[currentPanelId].boundaries.length > 1 && currentRender === "conSearch") {
         insertFwdBack(container)
       }
-      if (elements.linkSearch.checked && (elements.horizPanel.checked || elements.vertPanel.checked) && currentRender === "conSearch" && !inDouble && !restoring) { 
+      if (elements.linkSearch.checked && (elements.horizPanel.checked || elements.vertPanel.checked) && currentRender === "conSearch" && !inDouble) { 
         let activePanel = getActivePanelId();
         let inactivePanel = activePanel === 1 ? 0 : 1;
         activate(outputContainer.querySelector(`[data-panel-i-d="${inactivePanel}"]`), elements.gapInput.value);
         render(pullParallelSearch(customVerses), true, "conSearchParallel");
         activate(outputContainer.querySelector(`[data-panel-i-d="${activePanel}"]`), elements.gapInput.value);
+        pushToPair();
       }
     }
   } else {
@@ -2199,6 +2328,7 @@ function render(customVerses = null, inDouble = false, curRen = "reference") {
     }
     elements.gapInput.value = gap;
     autoGapInputWidth(elements.gapInput);
+    if (debugMode) console.log("end render()");
     return
   }
 
@@ -4114,7 +4244,7 @@ function searchVerses() {
 
   console.log(historyStacks[currentPanelId][historyIndexes[currentPanelId]].currentRender)
   if (restoring && historyStacks[currentPanelId][historyIndexes[currentPanelId]].currentRender === "conSearchParallel") {
-    container.innerHTML = '<p>Failed to load parallel search results.</p>';
+    container.innerHTML = '<p>You tried to restore a panel that was generated secondary to a parallel context search. This state is not preserved. Sorry about that!</p>';
     if (debugMode) console.log("end searchVerses()");
     return;
   }
