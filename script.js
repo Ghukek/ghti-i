@@ -500,7 +500,6 @@ function saveState(empty = false) {
       // Remove the matched row and all future rows (forward invalidation)
       historyPairs.splice(matchIndex);
     }
-    console.log(historyPairs);
   }
 
   let override = false;
@@ -809,8 +808,6 @@ function pushToPair() {
   );
 
   if (!exists) historyPairs.push(newPair);
-
-  if (debugMode) console.log("historyPairs:", historyPairs);
 }
 
 function historyNav(panelID, direction) {
@@ -844,8 +841,6 @@ function historyNav(panelID, direction) {
     row => row[pairColumn] === targetIndex && row[notPanelID] !== -1
   );
 
-  console.log(pairRow)
-
   if (!pairRow && targetRender !== "tabSearch") {
     showToast("Histories misaligned, using a temporary placeholder");
     loadState(panelID, direction);
@@ -854,7 +849,6 @@ function historyNav(panelID, direction) {
   }
 
   let pairedIndex = pairRow[notPanelID];
-  console.log(pairedIndex)
 
   // Handle behavior based on render type
   if (targetRender === "conSearchParallel") {
@@ -874,7 +868,6 @@ function historyNav(panelID, direction) {
 
   updateHistoryButtons(panelID);
   updateHistoryButtons(notPanelID);
-  console.log(historyPairs)
 }
 
 function handleGreekInput(e) {
@@ -2307,6 +2300,7 @@ function render(customVerses = null, inDouble = false, curRen = "reference") {
           verseEl,
           isFirstPanel
         ));
+        console.log(passUnderscore, countContext, verseEl)
       });
       if (verseEl) container.appendChild(verseEl);
       if (searchState[currentPanelId].boundaries.length > 1 && currentRender === "conSearch") {
@@ -2594,9 +2588,6 @@ function getRefResults(refData = null) {
         const verseData = currData[b][c][v];
         if (!verseData) continue;
 
-        results.push({ book: b, chapter: c, verse: v, verseData: currData[b][c][v] }) 
-
-        count++
         if (count >= parseInt(elements.searchSize.value, 10)) {
           elements.gapInput.value = count;
           autoGapInputWidth(elements.gapInput);
@@ -2607,6 +2598,9 @@ function getRefResults(refData = null) {
           elements.verseEnd.value = v;
           results.push({ book: -1, chapter: -1, verse: -1, verseData: "too many" })
           return { results, count }
+        } else {
+          results.push({ book: b, chapter: c, verse: v, verseData: currData[b][c][v] }) 
+          count++;
         }
       }
     }
@@ -2764,7 +2758,7 @@ function renderSingleVerse(container, book, chapter, verse, verseData, options, 
     container.appendChild(verseElin);
     verseElin = null;
 
-    container.innerHTML += `<p><b>${elements.searchSize.value} verses displayed. Limit reached. Increase this limit in 'Display Settings' if you want to render more.</b></p>`;
+    container.appendChild(`<p><b>${elements.searchSize.value} verses displayed. Limit reached. Increase this limit in 'Display Settings' if you want to render more.</b></p>`);
     localCountContext = 0;
     return {
       passUnderscore: localPassUnderscore, countContext: localCountContext, verseElin
