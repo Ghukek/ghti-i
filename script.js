@@ -2342,7 +2342,7 @@ function render(customVerses = null, inDouble = false, curRen = "reference") {
 
 function highlightCustomVerses(customVerses, searchTerms) {
   if (debugMode) console.log("highlightCustomVerses()");
-
+  console.log(customVerses);
   let window = [];
 
   function processWindow(win) {
@@ -2352,8 +2352,14 @@ function highlightCustomVerses(customVerses, searchTerms) {
     const flat = [];
     win.forEach(v=>{
       if (v.book === -1) return; // separator
-      v.verseData.forEach(w=>{
-        flat.push({ wordData:w });
+
+      // sort verseData by wordData[2] if reverseInterlinear is checked
+      const sortedVerseData = !elements.reverseInterlinear.checked
+        ? [...v.verseData].sort((a,b) => a[2] - b[2])
+        : v.verseData;
+
+      sortedVerseData.forEach(w=>{
+        flat.push({ wordData: w });
       });
     });
 
@@ -2363,11 +2369,21 @@ function highlightCustomVerses(customVerses, searchTerms) {
     let i=0;
     win.forEach(v=>{
       if (v.book === -1) return; // separator
+
+      // sort again to match original verseData order for updating
+      const sortedVerseData = !elements.reverseInterlinear.checked
+        ? [...v.verseData].sort((a,b) => a[2] - b[2])
+        : v.verseData;
+
       v.verseData = v.verseData.map(tok=>{
+        // find the corresponding marked token in sortedVerseData
+        const idxInSorted = sortedVerseData.findIndex(t => t === tok);
         const out = [...tok];
-        out[4] = marked[i++][4];
+        out[4] = marked[i + idxInSorted][4];
         return out;
       });
+
+      i += sortedVerseData.length;
     });
   }
 
@@ -4047,6 +4063,11 @@ function tryParseReference(refString) {
 
     let [, bookName, c1, v1, c2, v2] = match;
 
+    // Reject pure numeric "book names"
+    if (/^\d+$/.test(bookName.trim())) {
+      return null;
+    }
+
     let key = bookName.trim();
 
     // "1 cor" → "1cor"
@@ -4060,8 +4081,18 @@ function tryParseReference(refString) {
 
     // IMPORTANT: preserve your original semantics
 
-    // If chapter-only (e.g. "John 3") → reject (since your system expects verse)
-    if (!v1) v1 = "1"; // Default to verse 1 if only chapter is given
+    if (!c1) return null;
+    // If only chapter is provided, validate it before defaulting verse
+    if (!v1) {
+      const chapterIndex = parseInt(c1, 10) - 1;
+
+      // Check if chapter exists in baseData
+      if (!baseData[b] || !baseData[b][chapterIndex]) {
+        return null;
+      }
+
+      v1 = "1";
+    }
 
     const start = {
       b,
