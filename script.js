@@ -3894,116 +3894,174 @@ function matchMorphTag(pattern, tag) {
   return true;
 }
 
-const bookAlias = {
+const bookAliasLong = {
   // Pentateuch
-  gen: "Gen", genesis: "Gen",
-  ex: "Ex", exodus: "Ex",
-  lev: "Lev", leviticus: "Lev",
-  num: "Num", numbers: "Num",
-  deut: "Deut", deuteronomy: "Deut",
+  genesis: "Gen", exodus: "Ex", leviticus: "Lev", numbers: "Num", deuteronomy: "Deut",
 
   // Historical
-  josh: "Josh", joshua: "Josh",
-  judg: "Judg", judges: "Judg",
-  ruth: "Ruth",
-  "1sam": "1Sam", "1samuel": "1Sam", sam: "1Sam", samuel: "1Sam",
-  "2sam": "2Sam", "2samuel": "2Sam",
-  "1ki": "1Ki", "1kings": "1Ki", ki: "1Ki", kings: "1Ki",
-  "2ki": "2Ki", "2kings": "2Ki",
-  "1chr": "1Chr", "1chronicles": "1Chr", chr: "1Chr", chronicles: "1Chr",
-  "2chr": "2Chr", "2chronicles": "2Chr",
-  ezra: "Ezra", ezrah: "Ezra",
-  neh: "Neh", nehemiah: "Neh",
-  esth: "Esth", esther: "Esth",
+  joshua: "Josh", judges: "Judg", ruth: "Ruth", "1samuel": "1Sam", "2samuel": "2Sam", "1kings": "1Ki", "2kings": "2Ki", "1chronicles": "1Chr", "2chronicles": "2Chr", ezra: "Ezra", nehemiah: "Neh", esther: "Esth",
 
   // Wisdom
-  job: "Job",
-  pslm: "Pslm", psalm: "Pslm", psalms: "Pslm", ps: "Pslm",
-  prvb: "Prvb", prov: "Prvb", proverbs: "Prvb",
-  eccl: "Eccl", ecclesiastes: "Eccl",
-  song: "Song", songofsolomon: "Song", songofsongs: "Song", canticles: "Song",
+  job: "Job", psalms: "Pslm", proverbs: "Prvb", ecclesiastes: "Eccl", songofsolomon: "Song",
 
   // Major Prophets
-  is: "Is", isaiah: "Is",
-  jer: "Jer", jeremiah: "Jer",
-  lam: "Lam", lamentations: "Lam",
-  ezek: "Ezek", ezekiel: "Ezek",
-  dan: "Dan", daniel: "Dan",
+  isaiah: "Is", jeremiah: "Jer", lamentations: "Lam", ezekiel: "Ezek", daniel: "Dan",
 
   // Minor Prophets
-  hos: "Hos", hosea: "Hos",
-  joel: "Joel",
-  amos: "Amos",
-  obad: "Obad", obadiah: "Obad",
-  jonah: "Jonah",
-  micah: "Micah",
-  nahum: "Nahum",
-  habak: "Habak", habakkuk: "Habak",
-  zeph: "Zeph", zephaniah: "Zeph",
-  hagg: "Hagg", haggai: "Hagg",
-  zech: "Zech", zechariah: "Zech",
-  mal: "Mal", malachi: "Mal",
+  hosea: "Hos", joel: "Joel", amos: "Amos", obadiah: "Obad", jonah: "Jonah", micah: "Micah", nahum: "Nahum", habakkuk: "Habak", zephaniah: "Zeph", haggai: "Hagg", zechariah: "Zech", malachi: "Mal",
 
   // Gospels + Acts
-  matt: "Matt", matthew: "Matt",
-  mark: "Mark",
-  luke: "Luke",
-  john: "John",
-  acts: "Acts",
+  matthew: "Matt", mark: "Mark", luke: "Luke", john: "John", acts: "Acts",
 
   // Pauline
-  rom: "Rom", romans: "Rom",
-  "1cor": "1Cor", "1corinthians": "1Cor", cor: "1Cor", corinthians: "1Cor",
-  "2cor": "2Cor", "2corinthians": "2Cor",
-  gal: "Gal", galatians: "Gal",
-  eph: "Eph", ephesians: "Eph",
-  phil: "Phil", philippians: "Phil",
-  col: "Col", colossians: "Col",
-  "1thes": "1Thes", "1thessalonians": "1Thes", thes: "1Thes", thessalonians: "1Thes",
-  "2thes": "2Thes", "2thessalonians": "2Thes",
-  "1tim": "1Tim", "1timothy": "1Tim", tim: "1Tim", timothy: "1Tim",
-  "2tim": "2Tim", "2timothy": "2Tim",
-  tit: "Tit", titus: "Tit",
-  phm: "Phm", philemon: "Phm",
+  romans: "Rom", "1corinthians": "1Cor", "2corinthians": "2Cor", galatians: "Gal", ephesians: "Eph", philippians: "Phil", colossians: "Col", "1thessalonians": "1Thes", "2thessalonians": "2Thes", "1timothy": "1Tim", "2timothy": "2Tim", titus: "Tit", philemon: "Phm",
 
   // General Epistles
-  heb: "Heb", hebrews: "Heb",
-  james: "James",
-  "1pet": "1Pet", "1peter": "1Pet", pet: "1Pet", peter: "1Pet",
-  "2pet": "2Pet", "2peter": "2Pet",
-  "1john": "1John", 
-  "2john": "2John",
-  "3john": "3John",
-  jude: "Jude",
+  hebrews: "Heb", james: "James", "1peter": "1Pet", "2peter": "2Pet", "1john": "1John", "2john": "2John", "3john": "3John", jude: "Jude",
 
   // Apocalypse
-  rev: "Rev", revelation: "Rev", revelations: "Rev"
+  revelation: "Rev"
+};
+
+const bookAliasShort = {
+  // Gospels + Acts
+  matthew: "Matt", mark: "Mark", luke: "Luke", john: "John", acts: "Acts",
+
+  // Pauline
+  romans: "Rom", "1corinthians": "1Cor", "2corinthians": "2Cor", galatians: "Gal", ephesians: "Eph", philippians: "Phil", colossians: "Col", "1thessalonians": "1Thes", "2thessalonians": "2Thes", "1timothy": "1Tim", "2timothy": "2Tim", titus: "Tit", philemon: "Phm",
+
+  // General Epistles
+  hebrews: "Heb", james: "James", "1peter": "1Pet", "2peter": "2Pet", "1john": "1John", "2john": "2John", "3john": "3John", jude: "Jude",
+
+  // Apocalypse
+  revelation: "Rev"
 };
 
 // Helper: parse reference strings into book/chapter/verse indices
+function normalizeRefString(str) {
+  return str
+    .toLowerCase()
+    .replace(/[–—]/g, "-")      // normalize dashes
+    .replace(/\./g, ":")        // allow 3.16 → 3:16
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Precompute once
+function buildCanonicalBooks(bookAlias) {
+  const seen = new Set();
+
+  return Object.values(bookAlias)
+    .filter(name => {
+      if (seen.has(name)) return false;
+      seen.add(name);
+      return true;
+    })
+    .map(name => ({
+      original: name,
+      norm: name.toLowerCase().replace(/\s+/g, "")
+    }));
+}
+
+function initBookSystem(searchString) {
+  // local URLSearchParams
+  const params = new URLSearchParams(searchString);
+
+  // pick alias set
+  const bookAlias =
+    params.get("db") === "basex" ? bookAliasLong : bookAliasShort;
+
+  // build canonical list dynamically
+  const canonicalBooksNormalized = buildCanonicalBooks(bookAlias);
+
+  return {
+    bookAlias,
+    canonicalBooksNormalized
+  };
+}
+
+// Usage: pass window.location.search locally
+const { bookAlias, canonicalBooksNormalized } = initBookSystem(window.location.search);
+
+function resolveBookFuzzy(input) {
+  const key = input.toLowerCase().replace(/\s+/g, "");
+
+  // normalized canonical list
+  let candidates = canonicalBooksNormalized.map(b => ({
+    original: b.original,
+    norm: b.norm
+  }));
+
+  let i = 0; // user index
+  let j = 0; // book index (GLOBAL)
+
+  while (i < key.length && candidates.length > 0) {
+    const char = key[i];
+
+    // Step 1: try matching at current j
+    let matches = candidates.filter(b => b.norm[j] === char);
+
+    // Step 2: if none match, advance j only (fallback)
+    if (matches.length === 0) {
+      j++;
+
+      // if j exceeds all candidate lengths → fail
+      if (candidates.every(b => j >= b.norm.length)) {
+        return null;
+      }
+
+      continue; // retry SAME i with new j
+    }
+
+    // Step 3: if exactly one match → done
+    if (matches.length === 1) {
+      return matches[0].original;
+    }
+
+    // Step 4: multiple matches → narrow and advance both
+    candidates = matches;
+    i++;
+    j++;
+  }
+
+  return null; // ambiguous or exhausted
+}
+
 function tryParseReference(refString) {
   if (debugMode) console.log("tryParseReference()");
   if (!refString?.trim()) return null;
 
-  const refs = refString.split(",").map(r => r.trim()).filter(Boolean);
+  const normalized = normalizeRefString(refString);
+
+  const refs = normalized.split(",").map(r => r.trim()).filter(Boolean);
   const results = [];
 
   for (const ref of refs) {
-    const match = ref.match(/^(.+?)\s+(\d+):(\d+)(?:-(?:(\d+):)?(\d+))?$/);
+
+    // STRICT pattern after normalization
+    const match = ref.match(
+      /^(.+?)\s*(\d+)(?::(\d+))?(?:-(?:(\d+):)?(\d+))?$/
+    );
+
     if (!match) return null;
 
-    const [, bookName, c1, v1, c2, v2] = match;
+    let [, bookName, c1, v1, c2, v2] = match;
 
-    let key = bookName.toLowerCase();
+    let key = bookName.trim();
 
-    // contract "1 cor" → "1cor"
+    // "1 cor" → "1cor"
     key = key.replace(/^(\d+)\s+/, "$1");
 
-    const canonical = bookAlias[key];
+    let canonical = bookAlias[key] || resolveBookFuzzy(key);
     if (!canonical) return null;
 
     const b = bookAbb.findIndex(bk => bk === canonical);
     if (b === -1) return null;
+
+    // IMPORTANT: preserve your original semantics
+
+    // If chapter-only (e.g. "John 3") → reject (since your system expects verse)
+    if (!v1) v1 = "1"; // Default to verse 1 if only chapter is given
 
     const start = {
       b,
@@ -4011,7 +4069,6 @@ function tryParseReference(refString) {
       v: parseInt(v1, 10) - 1
     };
 
-    // no range
     if (!v2) {
       results.push(start);
       continue;
@@ -4026,7 +4083,7 @@ function tryParseReference(refString) {
     results.push({ start, end });
   }
 
-  // preserve original behavior if single simple ref
+  // Preserve your exact return behavior
   if (results.length === 1 && !results[0].start) {
     return results[0];
   }
