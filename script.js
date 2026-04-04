@@ -5855,6 +5855,7 @@ function setMode(changed = null) {
     buildPanels(1);
   }
 
+  toggleLink("none");
   onOptionsChange();
 }
 
@@ -5891,9 +5892,9 @@ document.addEventListener("DOMContentLoaded", updatePanelHeight);
 
 function toggleLink(type) {
   if (debugMode) console.log("toggleLink()");
-  document.getElementById("parallelModeActive").style.display = (elements.linkPanels.checked || elements.linkSearch.checked) ? "block" : "none";
-  document.getElementById("parallelRef").style.display = (elements.linkPanels.checked) ? "block" : "none";
-  document.getElementById("parallelSearch").style.display = (elements.linkSearch.checked) ? "block" : "none";
+  document.getElementById("parallelModeActive").style.display = ((elements.linkPanels.checked || elements.linkSearch.checked) && (elements.horizPanel.checked || elements.vertPanel.checked)) ? "block" : "none";
+  document.getElementById("parallelRef").style.display = (elements.linkPanels.checked && (elements.horizPanel.checked || elements.vertPanel.checked)) ? "block" : "none";
+  document.getElementById("parallelSearch").style.display = (elements.linkSearch.checked && (elements.horizPanel.checked || elements.vertPanel.checked)) ? "block" : "none";
   if (type === "ref") render();
   else if (type === "search") onOptionsChange();
   else return;
