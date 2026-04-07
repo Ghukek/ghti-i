@@ -843,7 +843,7 @@ function historyNav(panelID, direction) {
     row => row[pairColumn] === targetIndex && row[notPanelID] !== -1
   );
 
-  if (!pairRow && targetRender !== "tabSearch") {
+  if (!pairRow && targetRender !== "tabSearch" && (elements.horizPanel.checked || elements.vertPanel.checked)) {
     showToast("Histories misaligned, using a temporary placeholder");
     loadState(panelID, direction);
     updateHistoryButtons(panelID);
@@ -2342,7 +2342,7 @@ function render(customVerses = null, inDouble = false, curRen = "reference") {
 
 function highlightCustomVerses(customVerses, searchTerms) {
   if (debugMode) console.log("highlightCustomVerses()");
-  console.log(customVerses);
+
   let window = [];
 
   function processWindow(win) {
@@ -4254,7 +4254,7 @@ function searchChange() {
     pageSize: parseInt(elements.searchSize.value),
     boundaries: [0]
   };
-  searchVerses();
+  onOptionsChange();
 }
 
 function refSearch(searchTerm) {
