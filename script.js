@@ -4244,7 +4244,7 @@ let searchState = [
   newSearchState()
 ]; // separate state for each panel (0, 1, 2)
 
-function searchChange() {
+function searchChange(e = { type: "unknown" }) {
   if (debugMode) console.log("searchChange()");
   currentPanelId = (getActivePanelId() === 1 && select.value !== "none") ? 2 : getActivePanelId();
   searchState[currentPanelId] = {
@@ -4254,7 +4254,8 @@ function searchChange() {
     pageSize: parseInt(elements.searchSize.value),
     boundaries: [0]
   };
-  onOptionsChange();
+  if (e.type !== "change") searchVerses();
+  else onOptionsChange();
 }
 
 function refSearch(searchTerm) {
