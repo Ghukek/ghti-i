@@ -4270,7 +4270,6 @@ function refSearch(searchTerm) {
     const allResults = [];
     let count = 0;
     let truncated = false;
-    console.log(ref)
 
     for (const r of ref) {
       const { results: result, count: gap } = getRefResults(r);
@@ -5856,7 +5855,7 @@ function setMode(changed = null) {
   }
 
   toggleLink("none");
-  onOptionsChange();
+  if (changed !== "init") onOptionsChange();
 }
 
 function updatePanelHeight() {
