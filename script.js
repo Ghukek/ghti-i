@@ -672,7 +672,7 @@ function loadState(panelID, increment, fromChangeTranslation = false) {
   });
 
   centerFromSearch = state['centerScroll'];
-  currentRender = state['currentRender']
+  currentRender = state['currentRender'];
 
   historyIndexes[stackID] = index;
 
@@ -4328,7 +4328,6 @@ function searchVerses() {
   const container = document.getElementById('output');
   container.innerHTML = ''; // clear existing output
 
-  console.log(historyStacks[currentPanelId][historyIndexes[currentPanelId]].currentRender)
   if (restoring && historyStacks[currentPanelId][historyIndexes[currentPanelId]].currentRender === "conSearchParallel") {
     container.innerHTML = '<p>You tried to restore a panel that was generated secondary to a parallel context search. This state is not preserved. Sorry about that!</p>';
     if (debugMode) console.log("end searchVerses()");
