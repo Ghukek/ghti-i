@@ -832,6 +832,8 @@ function historyNav(panelID, direction) {
     (elements.linkSearch.checked &&
       (targetRender === "conSearch" || targetRender === "conSearchParallel"));
 
+  useLinking = useLinking && (elements.horizPanel.checked || elements.vertPanel.checked);
+
   if (!useLinking) {
     loadState(panelID, direction);
     updateHistoryButtons(panelID);
