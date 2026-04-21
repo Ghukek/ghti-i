@@ -1661,10 +1661,8 @@ function saveUrlSearch() {
   if (centerRange) params.set("s", "1");
   if (ordered) params.set("o", "1");
   if (adjacent) params.set("a", "1");
-  if (showContext) {
-    if (!reverseInterlinear) params.set("r", "0");
-    if (!highlightSearch) params.set("h", "0");
-  }
+  if (!reverseInterlinear) params.set("r", "0");
+  if (!highlightSearch) params.set("h", "0");
 
   const baseUrl = window.location.origin + window.location.pathname;
   const newUrl = `${baseUrl}?${params.toString()}`;
@@ -2065,9 +2063,9 @@ function render(customVerses = null, inDouble = false, curRen = "reference") {
   if (elements.linkPanels.checked && (elements.horizPanel.checked || elements.vertPanel.checked) && currentRender === "reference" && !inDouble) { 
     let activePanel = getActivePanelId();
     let inactivePanel = activePanel === 1 ? 0 : 1;
-    render(customVerses, true, "reference");
+    render(customVerses, true, curRen);
     activate(outputContainer.querySelector(`[data-panel-i-d="${inactivePanel}"]`), elements.gapInput.value);
-    render(customVerses, true, "reference");
+    render(customVerses, true, curRen);
     activate(outputContainer.querySelector(`[data-panel-i-d="${activePanel}"]`), elements.gapInput.value);
     pushToPair();
     if (debugMode) console.log("end render()");
@@ -2321,9 +2319,9 @@ function render(customVerses = null, inDouble = false, curRen = "reference") {
       }
     }
   } else {
-    let { results: refVerses, count: gap } = getRefResults();
+    let { results: refVerses, count: gap, renderMode: mode } = getRefResults();
     if (refVerses) {
-      render(refVerses, inDouble, "reference");
+      render(refVerses, inDouble, mode);
     }
     elements.gapInput.value = gap;
     autoGapInputWidth(elements.gapInput);
@@ -2548,6 +2546,7 @@ function getRefResults(refData = null) {
 
   let bookStart, chapterStart, verseStart;
   let bookEnd, chapterEnd, verseEnd;
+  let renderMode = "reference";
 
   // CASE 1 — reference provided programmatically
   if (refData && !Array.isArray(refData)) {
@@ -2569,6 +2568,7 @@ function getRefResults(refData = null) {
       chapterEnd = refData.end.c;
       verseEnd = refData.end.v;
     }
+    renderMode = "searchedReference";
   }
 
   // CASE 2 — fallback to UI values
@@ -2626,7 +2626,7 @@ function getRefResults(refData = null) {
       }
     }
   }
-  return { results, count };
+  return { results, count, renderMode };
 }
 
 function pullParallelSearch(results) {
