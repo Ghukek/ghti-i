@@ -1465,7 +1465,11 @@ function initializeSelections(userInit = false) {
   const settings = userInit ? null : allSettings.panels[0] || {};
 
   if (settings) {
-    loadSettings();
+    if (userInit) {
+      loadSettings();
+    } else {
+      loadSettings(true, true);
+    }
   }
 
   if (range?.gapInput > 0) {
@@ -3635,7 +3639,7 @@ function loadSettings(pageload=false, global=true) {
     }
 
     // Apply headgroup collapse states
-    setCollapsedHeadGroups(panelSettings.headGroupsCollapsed || []);
+    setCollapsedHeadGroups(globalSettings.headGroupsCollapsed || []);
   }
 
   if (panelId === 0) {

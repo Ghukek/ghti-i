@@ -1356,7 +1356,7 @@ let lookupdb = [["kai","Conj",2532,"kai","and",8232],["o","Art-NMS",3588,"o","th
 
 // Compile-time timestamps
 document.getElementById("data_last_updated")?.setAttribute("data-compile-lastmod", "Sat, 09 May 2026 23:18:57 GMT");
-document.getElementById("tool_last_updated")?.setAttribute("data-compile-lastmod", "Sun, 10 May 2026 11:31:24 GMT");
+document.getElementById("tool_last_updated")?.setAttribute("data-compile-lastmod", "Sun, 10 May 2026 11:38:46 GMT");
 
 // App code
 // GHT Study Tool by Nathan P. Wiebe. Javascript content. Granted to the Public Domain.
@@ -2825,7 +2825,11 @@ function initializeSelections(userInit = false) {
   const settings = userInit ? null : allSettings.panels[0] || {};
 
   if (settings) {
-    loadSettings();
+    if (userInit) {
+      loadSettings();
+    } else {
+      loadSettings(true, true);
+    }
   }
 
   if (range?.gapInput > 0) {
@@ -4995,7 +4999,7 @@ function loadSettings(pageload=false, global=true) {
     }
 
     // Apply headgroup collapse states
-    setCollapsedHeadGroups(panelSettings.headGroupsCollapsed || []);
+    setCollapsedHeadGroups(globalSettings.headGroupsCollapsed || []);
   }
 
   if (panelId === 0) {
