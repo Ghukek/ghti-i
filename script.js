@@ -240,7 +240,7 @@ if ('serviceWorker' in navigator) {
 
   let refreshing = false;
 
-  // 🔥 Reload when a new SW takes control
+  // Reload when a new SW takes control
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (!refreshing) {
       refreshing = true;
@@ -248,7 +248,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  // 🔥 Listen for update notifications from SW
+  // Listen for update notifications from SW
   navigator.serviceWorker.addEventListener('message', event => {
     if (event.data.type === 'UPDATE_AVAILABLE') {
       window.location.reload();
@@ -257,7 +257,7 @@ if ('serviceWorker' in navigator) {
 
   navigator.serviceWorker.register('/sw.js').then(reg => {
 
-    // 🔥 Force activate waiting SW
+    // Force activate waiting SW
     if (reg.waiting) {
       reg.waiting.postMessage({ type: 'SKIP_WAITING' });
     }
@@ -272,7 +272,7 @@ if ('serviceWorker' in navigator) {
       });
     });
 
-    // 🔥 Now safely trigger update check
+    // Now safely trigger update check
     if (navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage({ type: 'CHECK_FOR_UPDATE' });
     }
@@ -331,18 +331,7 @@ function loadBaseJson() {
       el.textContent = `${formatted} ${time}`;
     }
  
-    initializeSelections();
-    initPickers();
-    setupEventListeners();
-    setFontSize();
-    setMode("init");
-    toggleLink("none");
-    // Redundant. Now done in setMode.
-/*     if (currentRender !== "reference") {
-      searchVerses();
-    } else {
-      render();
-    } */
+    initAfterLoadBaseJson()
     // getCount is depreciated now that the NT is complete. If we do the OT, we will re-enable it.
     // getCount();
     return;
@@ -378,24 +367,22 @@ function loadBaseJson() {
   .then(([baseJson, lookupsJson]) => {
     baseData = baseJson;
     lookupdb = lookupsJson; // or whatever variable you're using for the lookup table
-    initializeSelections();
-    autoGapInputWidth(elements.gapInput);
-    initPickers();
-    setupEventListeners();
-    setFontSize();
-    setMode("init");
-    toggleLink("none");
-    // Redundant. Now done in setMode.
-/*     if (currentRender !== "reference") {
-      searchVerses();
-    } else {
-      render();
-    } */
+    initAfterLoadBaseJson()
     // getCount is depreciated now that the NT is complete. If we do the OT, we will re-enable it.
     // getCount();
   }).catch(err => {
     console.error("Error loading JSON files:", err);
   });
+}
+
+function initAfterLoadBaseJson() {
+  initializeSelections();
+  autoGapInputWidth(elements.gapInput);
+  initPickers();
+  setupEventListeners();
+  setFontSize();
+  setMode("init");
+  toggleLink("none");
 }
 
 function getCount() {
@@ -3100,7 +3087,7 @@ function renderSingleVerse(container, book, chapter, verse, verseData, options, 
     function createRootSpan(root, suffix, wordEl) {
       const text = toGreek(root) + suffix;
       const span = createClickableSpan("roots", text, wordEl);
-      span.dataset.search = '.' + toGreek(root);
+      span.dataset.search = '*' + toGreek(root);
       return span;
     }
 
@@ -4823,7 +4810,7 @@ function multiWordSearch(searchStr, lookupInd) {
       continue;
     }
    
-    if (/[α-ω]/i.test(term) && !inLookups && term[0] !== '.') { // BEGIN LXX Helper
+    if (/[α-ω]/i.test(term) && !inLookups && term[0] !== '*') { // BEGIN LXX Helper
       matches.push(term);
     } 
     
