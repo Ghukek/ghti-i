@@ -58,7 +58,6 @@
 
   <div class="info-box">
     <p>Add this WebApp to your home screen for full offline access to the GHT Interlinear Study Tool.</p>
-    <p>Or open the WebApp directly below:</p>
     <p id="ios-instructions" style="display:none;">
       To install this app on your iPhone or iPad, tap the Share icon and select "Add to Home Screen".
     </p>
@@ -70,7 +69,6 @@
   <div>
     <button id="downloadBtn">Download WebApp</button>
     <button id="installBtn">Install WebApp</button>
-    <button id="openBtn">Open WebApp</button>
   </div>
 
 <script>
@@ -114,11 +112,6 @@ document.getElementById('installBtn').addEventListener('click', async () => {
     // fallback for browsers that don’t support beforeinstallprompt
     document.getElementById('downloadBtn').click();
   }
-});
-
-// Open main app directly
-document.getElementById('openBtn').addEventListener('click', () => {
-  window.location.href = 'ght-i.html?time=' + Date.now();
 });
 
 // Download button click: save HTML file
